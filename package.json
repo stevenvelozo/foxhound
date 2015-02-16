@@ -1,0 +1,28 @@
+{
+  "name": "foxhound",
+  "version": "0.0.0",
+  "description": "A SQL Query generation library.",
+  "main": "source/FoxHound.js",
+  "scripts": {
+    "test": "mocha -u tdd -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stevenvelozo/foxhound.git"
+  },
+  "keywords": [
+    "orm",
+    "dal"
+  ],
+  "author": "Steven Velozo <steven@velozo.com> (http://velozo.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stevenvelozo/foxhound/issues"
+  },
+  "homepage": "https://github.com/stevenvelozo/foxhound",
+  "devDependencies": {
+    "chai": "^2.0.0",
+    "mocha": "^2.1.0",
+    "underscore": "^1.7.0"
+  }
+}
