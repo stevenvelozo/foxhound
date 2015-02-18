@@ -58,7 +58,7 @@ var FoxHound = function()
 		* Clone the current FoxHound Query into a new Query object, copying all 
 		* parameters as the new default.  Clone also copies the log level.
 		*
-		* @method resetParameters
+		* @method clone
 		* @return {Object} Returns a cloned Query.  This is still chainable.
 		*/
 		var clone = function()
@@ -67,7 +67,7 @@ var FoxHound = function()
 			tmpFoxHound.setLogLevel(_LogLevel);
 
 			return tmpFoxHound;
-		}
+		};
 
 
 		/**
@@ -79,9 +79,9 @@ var FoxHound = function()
 		*/
 		var resetParameters = function()
 		{
-			_Parameters = libUnderscore.extend(baseParameters, _DefaultParameters);
+			_Parameters = libUnderscore.extend({}, baseParameters, _DefaultParameters);
 			return this;
-		}
+		};
 
 		/**
 		* Reset the parameters of the FoxHound Query to the Default.  Default 
@@ -93,7 +93,7 @@ var FoxHound = function()
 		*/
 		var mergeParameters = function(pFromParameters)
 		{
-			_Parameters = libUnderscore.extend(_Parameters, pFromParameters);
+			_Parameters = libUnderscore.extend({}, _Parameters, pFromParameters);
 			return this;
 		};
 
@@ -140,7 +140,13 @@ var FoxHound = function()
 			var tmpScope = false;
 
 			if (typeof(pScope) === 'string')
+			{
 				tmpScope = pScope;
+			}
+			else
+			{
+				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope}, 'Scope set failed.  You must pass in a string or array.');
+			}
 
 			_Parameters.scope = tmpScope;
 
@@ -202,12 +208,20 @@ var FoxHound = function()
 			// Test if it is an integer > -1
 			// http://jsperf.com/numbers-and-integers
 			if (typeof(pBeginAmount) === 'number' && (pBeginAmount % 1) === 0 && pBeginAmount >= 0)
+			{
 				tmpBegin = pBeginAmount;
+			}
+			else
+			{
+				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount}, 'Begin set failed; non-positive or non-numeric argument.');
+			}
 
 			_Parameters.begin = tmpBegin;
 
 			if (_LogLevel > 2)
+			{
 				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Begin set: '+pBeginAmount);
+			}
 
 			return this;
 		};
@@ -230,7 +244,14 @@ var FoxHound = function()
 			var tmpCapAmount = false;
 
 			if (typeof(pCapAmount) === 'number' && (pCapAmount % 1) === 0 && pCapAmount >= 0)
+			{
 				tmpCapAmount = pCapAmount;
+			}
+			else
+			{
+				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount}, 'Cap set failed; non-positive or non-numeric argument.');
+			}
+
 
 			_Parameters.cap = tmpCapAmount;
 
@@ -256,6 +277,7 @@ var FoxHound = function()
 		var setDialect = function(pDialectName)
 		{
 			var tmpDialect = 'English';
+			setLogLevel(4);
 
 			if (typeof(pDialectName) === 'string')
 			{
@@ -267,29 +289,46 @@ var FoxHound = function()
 			}
 
 			var tmpDialectModuleFile = './dialects/'+tmpDialect+'/FoxHound-Dialect-'+tmpDialect+'.js';
-			if (_LogLevel > 2)
-				libLog.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
 
 			try
 			{
-				tmpDialectModule = require(tmpDialectModuleFile);
+				var tmpDialectModule = require(tmpDialectModuleFile);
 				_Dialect = tmpDialectModule;
+				if (_LogLevel > 2)
+					libLog.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
 			}
 			catch (pError)
 			{
-				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
+				libLog.error({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
 			}
+			setLogLevel(0);
 
 			return this;
-		}
+		};
 
-
-		var buildFetchQuery = function()
+		/**
+		* Check that a valid Dialect has been set
+		*
+		* If there has not been a dialect set, it defaults to English.
+		* TODO: Have the json configuration define a "default" dialect.
+		*
+		* @method checkDialect
+		*/
+		var checkDialect = function()
 		{
-			_Query.body = _Dialect.Fetch(_Parameters);
+			if (_Dialect === false)
+				setDialect('English');
+		};
+
+
+		var buildReadQuery = function()
+		{
+			checkDialect();
+
+			_Query.body = _Dialect.Read(_Parameters);
 
 			return this;
-		}
+		};
 
 		/**
 		* Container Object for our Factory Pattern
@@ -306,8 +345,10 @@ var FoxHound = function()
 			setBegin: setBegin,
 			setCap: setCap,
 
-			buildFetchQuery: buildFetchQuery,
+			setDialect: setDialect,
+			buildReadQuery: buildReadQuery,
 
+			clone: clone,
 			new: createNew
 		});
 
@@ -338,6 +379,18 @@ var FoxHound = function()
 			});
 
 		/**
+		 * Dialect
+		 *
+		 * @property dialect
+		 * @type Object
+		 */
+		Object.defineProperty(tmpNewFoxHoundObject, 'dialect',
+			{
+				get: function() { return _Dialect; },
+				enumerable: true
+			});
+
+		/**
 		 * Universally Unique Identifier
 		 *
 		 * @property uuid
@@ -355,8 +408,6 @@ var FoxHound = function()
 			// TODO: Load a json file with default dialect if necessary.
 			// On creation of a new query object, we force reset the parameters.
 			resetParameters();
-
-			setDialect('English');
 		};
 		__initialize();
 
@@ -366,4 +417,4 @@ var FoxHound = function()
 	return createNew();
 };
 
-module.exports = FoxHound();
+module.exports = new FoxHound();
