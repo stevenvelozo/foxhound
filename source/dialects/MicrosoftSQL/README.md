@@ -1,0 +1,1 @@
+# The MicrosoftSQL Query Dialect
