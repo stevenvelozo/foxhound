@@ -13,6 +13,9 @@ var FoxHoundDialectEnglish = function()
 {
 	var Create = function(pParameters)
 	{
+		var tmpScope = pParameters.scope;
+
+		return 'Here is a '+tmpScope+'.';
 	};
 
 	/**
@@ -38,14 +41,23 @@ var FoxHoundDialectEnglish = function()
 
 	var Update = function(pParameters)
 	{
+		var tmpScope = pParameters.scope;
+
+		return 'I am changing your '+tmpScope+'.';
 	};
 
 	var Delete = function(pParameters)
 	{
+		var tmpScope = pParameters.scope;
+
+		return 'I am deleting your '+tmpScope+'.';
 	};
 
 	var Count = function(pParameters)
 	{
+		var tmpScope = pParameters.scope;
+
+		return 'Count your '+tmpScope+'.';
 	};
 
 	var tmpDialect = ({
