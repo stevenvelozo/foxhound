@@ -14,7 +14,7 @@ var libLog = require('./Logger.js');
 // Each query object gets a UUID, using flake-idgen and biguint-format
 var libFlakeIDGen = require('flake-idgen');
 var flakeIDGen = new libFlakeIDGen();
-var libIntFormat = require('biguint-format')
+var libIntFormat = require('biguint-format');
 // TODO: Load parameters for FlakeID generation from a .json config if it exists
 
 // Load our base parameters skeleton object
@@ -55,7 +55,7 @@ var FoxHound = function()
 		});
 
 		/**
-		* Clone the current FoxHound Query into a new Query object, copying all 
+		* Clone the current FoxHound Query into a new Query object, copying all
 		* parameters as the new default.  Clone also copies the log level.
 		*
 		* @method clone
@@ -71,7 +71,7 @@ var FoxHound = function()
 
 
 		/**
-		* Reset the parameters of the FoxHound Query to the Default.  Default 
+		* Reset the parameters of the FoxHound Query to the Default.  Default
 		* parameters were set during object construction.
 		*
 		* @method resetParameters
@@ -84,7 +84,7 @@ var FoxHound = function()
 		};
 
 		/**
-		* Reset the parameters of the FoxHound Query to the Default.  Default 
+		* Reset the parameters of the FoxHound Query to the Default.  Default
 		* parameters were set during object construction.
 		*
 		* @method mergeParameters
@@ -116,7 +116,9 @@ var FoxHound = function()
 			var tmpLogLevel = 0;
 
 			if (typeof(pLogLevel) === 'number' && (pLogLevel % 1) === 0)
+			{
 				tmpLogLevel = pLogLevel;
+			}
 
 			_LogLevel = tmpLogLevel;
 
@@ -151,7 +153,9 @@ var FoxHound = function()
 			_Parameters.scope = tmpScope;
 
 			if (_LogLevel > 2)
+			{
 				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Scope set: '+tmpScope);
+			}
 
 			return this;
 		};
@@ -178,12 +182,16 @@ var FoxHound = function()
 				tmpDataElements = pDataElements;
 			}
 			if (typeof(pDataElements) === 'string')
+			{
 				tmpDataElements = [pDataElements];
+			}
 
 			_Parameters.dataElements = tmpDataElements;
 
 			if (_LogLevel > 2)
+			{
 				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Data Elements set');
+			}
 
 			return this;
 		};
@@ -256,7 +264,9 @@ var FoxHound = function()
 			_Parameters.cap = tmpCapAmount;
 
 			if (_LogLevel > 2)
+			{
 				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Cap set to: '+tmpCapAmount);
+			}
 
 			return this;
 		};
@@ -295,7 +305,9 @@ var FoxHound = function()
 				var tmpDialectModule = require(tmpDialectModuleFile);
 				_Dialect = tmpDialectModule;
 				if (_LogLevel > 2)
+				{
 					libLog.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
+				}
 			}
 			catch (pError)
 			{
@@ -317,7 +329,9 @@ var FoxHound = function()
 		var checkDialect = function()
 		{
 			if (_Dialect === false)
+			{
 				setDialect('English');
+			}
 		};
 
 
