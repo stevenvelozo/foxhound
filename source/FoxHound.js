@@ -9,13 +9,6 @@
 
 // We use Underscore.js for utility
 var libUnderscore = require('underscore');
-// The logger uses Bunyan to write logs
-var libLog = require('./Logger.js');
-// Each query object gets a UUID, using flake-idgen and biguint-format
-var libFlakeIDGen = require('flake-idgen');
-var flakeIDGen = new libFlakeIDGen();
-var libIntFormat = require('biguint-format');
-// TODO: Load parameters for FlakeID generation from a .json config if it exists
 
 // Load our base parameters skeleton object
 var baseParameters = require('./Parameters.js');
@@ -28,10 +21,14 @@ var baseParameters = require('./Parameters.js');
 */
 var FoxHound = function()
 {
-	function createNew(pFromParameters)
+	function createNew(pFable, pFromParameters)
 	{
-		// A universally unique identifier for this query
-		var _UUID = libIntFormat(flakeIDGen.next(), 'hex', { prefix: '0x' });
+		// If a valid Fable object isn't passed in, return a constructor
+		if ((typeof(pFable) !== 'object') || (!pFable.hasOwnProperty('fable')))
+		{
+			return {new: createNew};
+		}
+		var _Fable = pFable;
 
 		// The default parameters config object, used as a template for all new
 		// queries created from this query.
@@ -41,18 +38,14 @@ var FoxHound = function()
 		// piece of internal state that is important to operation.
 		var _Parameters = false;
 
+		// The unique identifier for a query
+		var _UUID = _Fable.getUUID();
+
 		// The log level, for debugging chattiness.
 		var _LogLevel = 0;
 
 		// The dialect to use when generating queries
 		var _Dialect = false;
-
-		// Some internal state about the query
-		var _Query = (
-		{
-			body: '',
-			parameters: []
-		});
 
 		/**
 		* Clone the current FoxHound Query into a new Query object, copying all
@@ -63,7 +56,27 @@ var FoxHound = function()
 		*/
 		var clone = function()
 		{
-			var tmpFoxHound = createNew(_Parameters);
+			var tmpFoxHound = createNew(_Fable, baseParameters);
+			if (_Parameters.scope)
+			{
+				tmpFoxHound.parameters.scope = _Parameters.scope;
+			}
+			if (_Parameters.dataElements)
+			{
+				tmpFoxHound.parameters.dataElements = _Parameters.dataElements.slice(); // Copy the array of dataElements
+			}
+			if (_Parameters.begin)
+			{
+				tmpFoxHound.parameters.begin = _Parameters.begin;
+			}
+			if (_Parameters.cap)
+			{
+				tmpFoxHound.parameters.cap = _Parameters.cap;
+			}
+			if (_Parameters.filter)
+			{
+				tmpFoxHound.parameters.filter = _Parameters.filter;
+			}
 			tmpFoxHound.setLogLevel(_LogLevel);
 
 			return tmpFoxHound;
@@ -147,14 +160,14 @@ var FoxHound = function()
 			}
 			else
 			{
-				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope}, 'Scope set failed.  You must pass in a string or array.');
+				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope}, 'Scope set failed.  You must pass in a string or array.');
 			}
 
 			_Parameters.scope = tmpScope;
 
 			if (_LogLevel > 2)
 			{
-				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Scope set: '+tmpScope);
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Scope set: '+tmpScope);
 			}
 
 			return this;
@@ -190,7 +203,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Data Elements set');
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Data Elements set');
 			}
 
 			return this;
@@ -221,14 +234,14 @@ var FoxHound = function()
 			}
 			else
 			{
-				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount}, 'Begin set failed; non-positive or non-numeric argument.');
+				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount}, 'Begin set failed; non-positive or non-numeric argument.');
 			}
 
 			_Parameters.begin = tmpBegin;
 
 			if (_LogLevel > 2)
 			{
-				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Begin set: '+pBeginAmount);
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Begin set: '+pBeginAmount);
 			}
 
 			return this;
@@ -257,7 +270,7 @@ var FoxHound = function()
 			}
 			else
 			{
-				libLog.error({queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount}, 'Cap set failed; non-positive or non-numeric argument.');
+				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount}, 'Cap set failed; non-positive or non-numeric argument.');
 			}
 
 
@@ -265,7 +278,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				libLog.info({queryUUID:_UUID, parameters:_Parameters}, 'Cap set to: '+tmpCapAmount);
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Cap set to: '+tmpCapAmount);
 			}
 
 			return this;
@@ -295,7 +308,7 @@ var FoxHound = function()
 			}
 			else
 			{
-				libLog.warn({queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName}, 'Dialect set to English - invalid name');
+				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName}, 'Dialect set to English - invalid name');
 			}
 
 			var tmpDialectModuleFile = './dialects/'+tmpDialect+'/FoxHound-Dialect-'+tmpDialect+'.js';
@@ -306,12 +319,12 @@ var FoxHound = function()
 				_Dialect = tmpDialectModule;
 				if (_LogLevel > 2)
 				{
-					libLog.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
+					_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
 				}
 			}
 			catch (pError)
 			{
-				libLog.error({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
+				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
 			}
 			setLogLevel(0);
 
@@ -339,7 +352,9 @@ var FoxHound = function()
 		{
 			checkDialect();
 
-			_Query.body = _Dialect.Read(_Parameters);
+			_Fable.log.fatal('Query', _Parameters)
+
+			_Parameters.query.body = _Dialect.Read(_Parameters);
 
 			return this;
 		};
@@ -374,8 +389,21 @@ var FoxHound = function()
 		 */
 		Object.defineProperty(tmpNewFoxHoundObject, 'query',
 			{
-				get: function() { return _Query; },
-				set: function(pQuery) { _Query = pQuery; },
+				get: function() { return _Parameters.query; },
+				set: function(pQuery) { _Parameters.query = pQuery; },
+				enumerable: true
+			});
+
+		/**
+		 * Result
+		 *
+		 * @property result
+		 * @type Object
+		 */
+		Object.defineProperty(tmpNewFoxHoundObject, 'result',
+			{
+				get: function() { return _Parameters.result; },
+				set: function(pResult) { _Parameters.result = pResult; },
 				enumerable: true
 			});
 

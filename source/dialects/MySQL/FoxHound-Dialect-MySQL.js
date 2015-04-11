@@ -3,6 +3,15 @@
 *
 * @license MIT
 *
+* For a MySQL query override:
+// An underscore template with the following values:
+//      <%= DataElements %> = Field1, Field2, Field3, Field4
+//      <%= Begin %>        = 0
+//      <%= Cap %>          = 10
+//      <%= Filter %>       = WHERE StartDate > :MyStartDate
+//      <%= Sort %>         = ORDER BY Field1
+// The values are empty strings if they aren't set.
+*
 * @author Steven Velozo <steven@velozo.com>
 * @class FoxHoundDialectMySQL
 */
@@ -28,9 +37,7 @@ var FoxHoundDialectMySQL = function()
 	*/
 	var Read = function(pParameters)
 	{
-		var tmpScope = pParameters.scope;
-
-		return 'SELECT * FROM '+tmpScope+';';
+		return 'SELECT * FROM '+pParameters.scope+';';
 	};
 
 	var Update = function(pParameters)
