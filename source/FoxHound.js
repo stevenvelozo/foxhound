@@ -28,6 +28,7 @@ var FoxHound = function()
 		{
 			return {new: createNew};
 		}
+
 		var _Fable = pFable;
 
 		// The default parameters config object, used as a template for all new
@@ -56,28 +57,25 @@ var FoxHound = function()
 		*/
 		var clone = function()
 		{
-			var tmpFoxHound = createNew(_Fable, baseParameters);
-			if (_Parameters.scope)
-			{
-				tmpFoxHound.parameters.scope = _Parameters.scope;
-			}
+			var tmpFoxHound = createNew(_Fable, baseParameters)
+				.setScope(_Parameters.scope)
+				.setBegin(_Parameters.begin)
+				.setCap(_Parameters.cap);
+
 			if (_Parameters.dataElements)
 			{
 				tmpFoxHound.parameters.dataElements = _Parameters.dataElements.slice(); // Copy the array of dataElements
 			}
-			if (_Parameters.begin)
+			if (_Parameters.sort)
 			{
-				tmpFoxHound.parameters.begin = _Parameters.begin;
-			}
-			if (_Parameters.cap)
-			{
-				tmpFoxHound.parameters.cap = _Parameters.cap;
+				tmpFoxHound.parameters.sort = _Parameters.sort.slice(); // Copy the sort array.
+				// TODO: Fix the side affect nature of these being objects in the array .. they are technically clones of the previous.
 			}
 			if (_Parameters.filter)
 			{
-				tmpFoxHound.parameters.filter = _Parameters.filter;
+				tmpFoxHound.parameters.filter = _Parameters.filter.slice(); // Copy the filter array.
+				// TODO: Fix the side affect nature of these being objects in the array .. they are technically clones of the previous.
 			}
-			tmpFoxHound.setLogLevel(_LogLevel);
 
 			return tmpFoxHound;
 		};
@@ -93,8 +91,23 @@ var FoxHound = function()
 		var resetParameters = function()
 		{
 			_Parameters = libUnderscore.extend({}, baseParameters, _DefaultParameters);
+			_Parameters.query = ({
+				body: false,
+				schema: false,   // The schema to intersect with our records
+				records: false,  // The records to be created or changed
+				parameters: {}
+			});
+
+			_Parameters.result = ({
+				executed: false, // True once we've run a query.
+				value: false,    // The return value of the last query run
+				error: false     // The error message of the last run query
+			});
+
 			return this;
 		};
+		resetParameters();
+		_Fable.log.trace('Parameters:', _Parameters)
 
 		/**
 		* Reset the parameters of the FoxHound Query to the Default.  Default
@@ -211,6 +224,49 @@ var FoxHound = function()
 
 
 		/**
+		* Set the sort data element
+		*
+		* The passed values can be either a string, an object or an array of objects.
+		*
+		* The Sort object has two values:
+		* {Column:'Birthday', Direction:'Ascending'}
+		*
+		* @method setSort
+		* @param {String} pSort The sort criteria(s) for the Query.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var setSort = function(pSort)
+		{
+			var tmpSort = false;
+
+			if (Array.isArray(pSort))
+			{
+				// TODO: Check each entry of the array are all conformant sort objects
+				tmpSort = pSort;
+			}
+			else if (typeof(pSort) === 'string')
+			{
+				// Default to ascending
+				tmpSort = [{Column:pSort, Direction:'Ascending'}];
+			}
+			else if (typeof(pSort) === 'object')
+			{
+				// TODO: Check that this sort entry conforms to a sort entry
+				tmpSort = [pSort];
+			}
+
+			_Parameters.sort = tmpSort;
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Sort set');
+			}
+
+			return this;
+		};
+
+
+		/**
 		* Set the the Begin index for the Query.  *Begin* is the index at which
 		* a query should start returning rows.  In TSQL this would be the n
 		* parameter of ```LIMIT 1,n```, whereas in MongoDB this would be the
@@ -285,6 +341,131 @@ var FoxHound = function()
 		};
 
 
+		/**
+		* Set the filter expression
+		*
+		* The passed values can be either an object or an array of objects.
+		*
+		* The Filter object has a minimum of two values (which expands to the following):
+		* {Column:'Name', Value:'John'}
+		* {Column:'Name', Operator:'EQ', Value:'John', Connector:'And', Parameter:'Name'}
+		*
+		* @method setFilter
+		* @param {String} pFilter The filter(s) for the Query.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var setFilter = function(pFilter)
+		{
+			var tmpFilter = false;
+
+			if (Array.isArray(pFilter))
+			{
+				// TODO: Check each entry of the array are all conformant Filter objects
+				tmpFilter = pFilter;
+			}
+			else if (typeof(pFilter) === 'object')
+			{
+				// TODO: Check that this Filter entry conforms to a Filter entry
+				tmpFilter = [pFilter];
+			}
+
+			_Parameters.filter = tmpFilter;
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Filter set');
+			}
+
+			return this;
+		};
+
+
+
+		/**
+		* Add a filter expression
+		*
+		* {Column:'Name', Operator:'EQ', Value:'John', Connector:'And', Parameter:'Name'}
+		*
+		* @method addFilter
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var addFilter = function(pColumn, pValue, pOperator, pConnector, pParameter)
+		{
+			if (typeof(pColumn) !== 'string')
+			{
+				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters}, 'Tried to add an invalid query filter column');
+				return this;
+			}
+			if (typeof(pValue) === 'undefined')
+			{
+				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters, invalidColumn:pColumn}, 'Tried to add an invalid query filter value');
+				return this;
+			}
+			var tmpOperator = (typeof(pOperator) === 'undefined') ? '=' : pOperator;
+			var tmpConnector = (typeof(pConnector) === 'undefined') ? 'AND' : pConnector;
+			var tmpParameter = (typeof(pParameter) === 'undefined') ? pColumn : pParameter;
+
+			var tmpFilter = (
+				{
+					Column: pColumn,
+					Operator: tmpOperator,
+					Value: pValue,
+					Connector: tmpConnector,
+					Parameter: tmpParameter
+				});
+
+			if (!Array.isArray(_Parameters.filter))
+			{
+				_Parameters.filter = [tmpFilter];
+			}
+			else
+			{
+				_Parameters.filter.push(tmpFilter);
+			}
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter}, 'Added a filter');
+			}
+
+			return this;
+		};
+
+
+
+		/**
+		* Add a record (for UPDATE and INSERT)
+		*
+		*
+		* @method addRecord
+		* @param {Object} pRecord The record to add.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var addRecord = function(pRecord)
+		{
+			if (typeof(pRecord) !== 'object')
+			{
+				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters}, 'Tried to add an invalid record to the query -- records must be an object');
+				return this;
+			}
+
+			if (!Array.isArray(_Parameters.query.records))
+			{
+				_Parameters.query.records = [pRecord];
+			}
+			else
+			{
+				_Parameters.query.records.push(pRecord);
+			}
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, newRecord:pRecord}, 'Added a record to the query');
+			}
+
+			return this;
+		};
+
 
 
 		/**
@@ -299,19 +480,13 @@ var FoxHound = function()
 		*/
 		var setDialect = function(pDialectName)
 		{
-			var tmpDialect = 'English';
-			setLogLevel(4);
-
-			if (typeof(pDialectName) === 'string')
-			{
-				tmpDialect = pDialectName;
-			}
-			else
+			if (typeof(pDialectName) !== 'string')
 			{
 				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName}, 'Dialect set to English - invalid name');
+				return setDialect('English');
 			}
 
-			var tmpDialectModuleFile = './dialects/'+tmpDialect+'/FoxHound-Dialect-'+tmpDialect+'.js';
+			var tmpDialectModuleFile = './dialects/'+pDialectName+'/FoxHound-Dialect-'+pDialectName+'.js';
 
 			try
 			{
@@ -319,14 +494,14 @@ var FoxHound = function()
 				_Dialect = tmpDialectModule;
 				if (_LogLevel > 2)
 				{
-					_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+tmpDialect);
+					_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+pDialectName);
 				}
 			}
 			catch (pError)
 			{
 				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
+				setDialect('English');
 			}
-			setLogLevel(0);
 
 			return this;
 		};
@@ -348,14 +523,38 @@ var FoxHound = function()
 		};
 
 
+		var buildCreateQuery = function()
+		{
+			checkDialect();
+			_Parameters.query.body = _Dialect.Create(_Parameters);
+			return this;
+		};
+
 		var buildReadQuery = function()
 		{
 			checkDialect();
-
-			_Fable.log.fatal('Query', _Parameters)
-
 			_Parameters.query.body = _Dialect.Read(_Parameters);
+			return this;
+		};
 
+		var buildUpdateQuery = function()
+		{
+			checkDialect();
+			_Parameters.query.body = _Dialect.Update(_Parameters);
+			return this;
+		};
+
+		var buildDeleteQuery = function()
+		{
+			checkDialect();
+			_Parameters.query.body = _Dialect.Delete(_Parameters);
+			return this;
+		};
+
+		var buildCountQuery = function()
+		{
+			checkDialect();
+			_Parameters.query.body = _Dialect.Count(_Parameters);
 			return this;
 		};
 
@@ -370,12 +569,22 @@ var FoxHound = function()
 			setLogLevel: setLogLevel,
 
 			setScope: setScope,
-			dataElements: setDataElements,
+			setDataElements: setDataElements,
 			setBegin: setBegin,
 			setCap: setCap,
+			setFilter: setFilter,
+			addFilter: addFilter,
+			setSort: setSort,
+
+			addRecord: addRecord,
 
 			setDialect: setDialect,
+
+			buildCreateQuery: buildCreateQuery,
 			buildReadQuery: buildReadQuery,
+			buildUpdateQuery: buildUpdateQuery,
+			buildDeleteQuery: buildDeleteQuery,
+			buildCountQuery: buildCountQuery,
 
 			clone: clone,
 			new: createNew
@@ -443,15 +652,6 @@ var FoxHound = function()
 				get: function() { return _UUID; },
 				enumerable: true
 			});
-
-
-		var __initialize = function ()
-		{
-			// TODO: Load a json file with default dialect if necessary.
-			// On creation of a new query object, we force reset the parameters.
-			resetParameters();
-		};
-		__initialize();
 
 		return tmpNewFoxHoundObject;
 	}

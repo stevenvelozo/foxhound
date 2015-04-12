@@ -22,11 +22,41 @@ var FoxHoundQueryParameters = (
 								// TSQL: n in LIMIT n
 								// MongoDB: n in limit(n)
 
-		filter: false,       // ARR of OBJ: Data filter expression list
+		// Serialization example for a query:
+		// Take the filter and return an array of filter instructions
+		// Basic instruction anatomy:
+		//       INSTRUCTION~FIELD~OPERATOR~VALUE
+		// FOP - Filter Open Paren
+		//       FOP~~(~
+		// FCP - Filter Close Paren
+		//       FCP~~)~
+		// FBV - Filter By Value
+		//       FBV~Category~EQ~Books
+		//       Possible comparisons:
+		//       * EQ - Equals To (=)
+		//       * NE - Not Equals To (!=)
+		//       * GT - Greater Than (>)
+		//       * GE - Greater Than or Equals To (>=)
+		//       * LT - Less Than (<)
+		//       * LE - Less Than or Equals To (<=)
+		//       * LK - Like (Like)
+		// FBL - Filter By List (value list, separated by commas)
+		//       FBL~Category~EQ~Books,Movies
+		// FSF - Filter Sort Field
+		//       FSF~Category~ASC~0
+		//       FSF~Category~DESC~0
+		// FCC - Filter Constraint Cap (the limit of what is returned)
+		//       FCC~~10~
+		// FCB - Filter Constraint Begin (the zero-based start index of what is returned)
+		//       FCB~~10~
+		//
+		// This means: FBV~Category~EQ~Books~FBV~PublishedYear~GT~2000~FSF~PublishedYear~DESC~0
+		//             Filters down to ALL BOOKS PUBLISHED AFTER 2000 IN DESCENDING ORDER
+		filter: false,       // ARR of OBJ: Data filter expression list {Column:'Name', Operator:'EQ', Value:'John', Connector:'And', Parameter:'Name'}
 								// TSQL: the WHERE clause
 								// MongoDB: a find() expression
 
-		sort: false,         // ARR of OBJ: The sort order
+		sort: false,         // ARR of OBJ: The sort order    {Column:'Birthday', Direction:'Ascending'}
 								// TSQL: ORDER BY
 								// MongoDB: sort()
 
@@ -34,20 +64,25 @@ var FoxHoundQueryParameters = (
 		queryoverride: false,
 
 		// Where the generated query goes
-		query: (
+		query: false,
+		/*
 			{
 				body: false,
+				schema: false,   // The schema to intersect with our records
+				records: false,  // The records to be created or changed
 				parameters: {}
-			}),
+			}
+		*/
 
 		// Where the query results are stuck
-		result: (
+		result: false
+		/*
 			{
 				executed: false, // True once we've run a query.
-				records: false,  // The records to be created or changed
-				value: false,    // The mysql return value of the last query run
+				value: false,    // The return value of the last query run
 				error: false     // The error message of the last run query
-			})
+			}
+		*/
 });
 
 module.exports = FoxHoundQueryParameters;
