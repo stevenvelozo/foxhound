@@ -269,7 +269,7 @@ var FoxHoundDialectMySQL = function()
 			}
 
 			var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-			tmpCreateSet += ' '+tmpColumn+' = :'+tmpColumnParameter;
+			tmpCreateSet += ' :'+tmpColumnParameter;
 
 			// Set the query parameter
 			pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
@@ -388,7 +388,7 @@ var FoxHoundDialectMySQL = function()
 
 	var Count = function(pParameters)
 	{
-		return 'SELECT COUNT(*) FROM'+
+		return 'SELECT COUNT(*) AS RowCount FROM'+
 					generateTableName(pParameters)+
 					generateWhere(pParameters)+
 					';';

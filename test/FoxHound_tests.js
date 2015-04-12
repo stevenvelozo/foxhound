@@ -39,7 +39,9 @@ suite
 						Expect(testFoxHound)
 							.to.be.an('object', 'FoxHound should initialize as an object directly from the require statement.');
 						Expect(testFoxHound).to.have.a.property('uuid')
-							.that.is.a('string');					}
+							.that.is.a('string');
+						Expect(testFoxHound).to.have.a.property('logLevel');
+					}
 				);
 				test
 				(

@@ -644,11 +644,23 @@ var FoxHound = function()
 		 * Universally Unique Identifier
 		 *
 		 * @property uuid
-		 * @type string
+		 * @type String
 		 */
 		Object.defineProperty(tmpNewFoxHoundObject, 'uuid',
 			{
 				get: function() { return _UUID; },
+				enumerable: true
+			});
+
+		/**
+		 * Log Level
+		 *
+		 * @property logLevel
+		 * @type Integer
+		 */
+		Object.defineProperty(tmpNewFoxHoundObject, 'logLevel',
+			{
+				get: function() { return _LogLevel; },
 				enumerable: true
 			});
 
