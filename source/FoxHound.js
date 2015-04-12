@@ -170,7 +170,7 @@ var FoxHound = function()
 			{
 				tmpScope = pScope;
 			}
-			else
+			else if (pScope !== false)
 			{
 				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope}, 'Scope set failed.  You must pass in a string or array.');
 			}
@@ -287,7 +287,7 @@ var FoxHound = function()
 			{
 				tmpBegin = pBeginAmount;
 			}
-			else
+			else if (pBeginAmount !== false)
 			{
 				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount}, 'Begin set failed; non-positive or non-numeric argument.');
 			}
@@ -323,7 +323,7 @@ var FoxHound = function()
 			{
 				tmpCapAmount = pCapAmount;
 			}
-			else
+			else if (pCapAmount !== false)
 			{
 				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount}, 'Cap set failed; non-positive or non-numeric argument.');
 			}
