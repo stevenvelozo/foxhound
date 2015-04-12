@@ -172,14 +172,14 @@ var FoxHound = function()
 			}
 			else if (pScope !== false)
 			{
-				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope}, 'Scope set failed.  You must pass in a string or array.');
+				_Fable.log.error('Scope set failed.  You must pass in a string or array.', {queryUUID:_UUID, parameters:_Parameters, invalidScope:pScope});
 			}
 
 			_Parameters.scope = tmpScope;
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Scope set: '+tmpScope);
+				_Fable.log.info('Scope set: '+tmpScope, {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -215,7 +215,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Data Elements set');
+				_Fable.log.info('Data Elements set', {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -258,7 +258,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Sort set');
+				_Fable.log.info('Sort set', {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -289,14 +289,14 @@ var FoxHound = function()
 			}
 			else if (pBeginAmount !== false)
 			{
-				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount}, 'Begin set failed; non-positive or non-numeric argument.');
+				_Fable.log.error('Begin set failed; non-positive or non-numeric argument.', {queryUUID:_UUID, parameters:_Parameters, invalidBeginAmount:pBeginAmount});
 			}
 
 			_Parameters.begin = tmpBegin;
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Begin set: '+pBeginAmount);
+				_Fable.log.info('Begin set: '+pBeginAmount, {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -325,7 +325,7 @@ var FoxHound = function()
 			}
 			else if (pCapAmount !== false)
 			{
-				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount}, 'Cap set failed; non-positive or non-numeric argument.');
+				_Fable.log.error('Cap set failed; non-positive or non-numeric argument.', {queryUUID:_UUID, parameters:_Parameters, invalidCapAmount:pCapAmount});
 			}
 
 
@@ -333,7 +333,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Cap set to: '+tmpCapAmount);
+				_Fable.log.info('Cap set to: '+tmpCapAmount, {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -372,7 +372,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters}, 'Filter set');
+				_Fable.log.info('Filter set', {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -392,12 +392,12 @@ var FoxHound = function()
 		{
 			if (typeof(pColumn) !== 'string')
 			{
-				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters}, 'Tried to add an invalid query filter column');
+				_Fable.log.warn('Tried to add an invalid query filter column', {queryUUID:_UUID, parameters:_Parameters});
 				return this;
 			}
 			if (typeof(pValue) === 'undefined')
 			{
-				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters, invalidColumn:pColumn}, 'Tried to add an invalid query filter value');
+				_Fable.log.warn('Tried to add an invalid query filter value', {queryUUID:_UUID, parameters:_Parameters, invalidColumn:pColumn});
 				return this;
 			}
 			var tmpOperator = (typeof(pOperator) === 'undefined') ? '=' : pOperator;
@@ -424,7 +424,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter}, 'Added a filter');
+				_Fable.log.info('Added a filter', {queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter});
 			}
 
 			return this;
@@ -444,7 +444,7 @@ var FoxHound = function()
 		{
 			if (typeof(pRecord) !== 'object')
 			{
-				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters}, 'Tried to add an invalid record to the query -- records must be an object');
+				_Fable.log.warn('Tried to add an invalid record to the query -- records must be an object', {queryUUID:_UUID, parameters:_Parameters});
 				return this;
 			}
 
@@ -459,7 +459,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, newRecord:pRecord}, 'Added a record to the query');
+				_Fable.log.info('Added a record to the query', {queryUUID:_UUID, parameters:_Parameters, newRecord:pRecord});
 			}
 
 			return this;
@@ -481,7 +481,7 @@ var FoxHound = function()
 		{
 			if (typeof(pDialectName) !== 'string')
 			{
-				_Fable.log.warn({queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName}, 'Dialect set to English - invalid name');
+				_Fable.log.warn('Dialect set to English - invalid name', {queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName});
 				return setDialect('English');
 			}
 
@@ -493,12 +493,12 @@ var FoxHound = function()
 				_Dialect = tmpDialectModule;
 				if (_LogLevel > 2)
 				{
-					_Fable.log.info({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile}, 'Dialog set to: '+pDialectName);
+					_Fable.log.info('Dialog set to: '+pDialectName, {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile});
 				}
 			}
 			catch (pError)
 			{
-				_Fable.log.error({queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError}, 'Dialect not set - require load problem');
+				_Fable.log.error('Dialect not set - require load problem', {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError});
 				setDialect('English');
 			}
 
