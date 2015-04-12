@@ -107,8 +107,7 @@ var FoxHound = function()
 			return this;
 		};
 		resetParameters();
-		_Fable.log.trace('Parameters:', _Parameters)
-
+		
 		/**
 		* Reset the parameters of the FoxHound Query to the Default.  Default
 		* parameters were set during object construction.
