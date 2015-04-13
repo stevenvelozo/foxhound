@@ -397,12 +397,6 @@ var FoxHoundDialectMySQL = function()
 		// If there is more than one record in records, we are going to ignore them for now.
 		for(var tmpColumn in tmpRecords[0])
 		{
-			// TODO: Validate against pParameters.query.schema
-			if (tmpCreateSet != '')
-			{
-				tmpCreateSet += ',';
-			}
-
 			// No hash table yet, so, we will just linear search it for now.
 			// This uses the schema to decide if we want to treat a column differently on insert
 			var tmpSchemaEntry = {Column:tmpColumn, Type:'Default'};
@@ -417,13 +411,15 @@ var FoxHoundDialectMySQL = function()
 			}
 			switch (tmpSchemaEntry.Type)
 			{
-				case 'UpdateDate':
-				case 'UpdateIDUser':
 				case 'DeleteDate':
 				case 'DeleteIDUser':
 					// These are all ignored on insert
 					break;
 				default:
+					if (tmpCreateSet != '')
+					{
+						tmpCreateSet += ',';
+					}
 					tmpCreateSet += ' '+tmpColumn;
 					break;
 			}
