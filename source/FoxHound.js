@@ -62,6 +62,9 @@ var FoxHound = function()
 				.setBegin(_Parameters.begin)
 				.setCap(_Parameters.cap);
 
+			// Schema is the only part of a query that carries forward.
+			tmpFoxHound.query.schema = _Parameters.query.schema;
+
 			if (_Parameters.dataElements)
 			{
 				tmpFoxHound.parameters.dataElements = _Parameters.dataElements.slice(); // Copy the array of dataElements
@@ -95,6 +98,7 @@ var FoxHound = function()
 				body: false,
 				schema: false,   // The schema to intersect with our records
 				IDUser: 0,       // The user to stamp into records
+				UUID: _Fable.getUUID(), // A UUID for this record
 				records: false,  // The records to be created or changed
 				parameters: {}
 			});

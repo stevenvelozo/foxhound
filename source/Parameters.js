@@ -70,6 +70,7 @@ var FoxHoundQueryParameters = (
 				body: false,
 				schema: false,   // The schema to intersect with our records
 				IDUser: 0,       // The User ID to stamp into records
+				UUID: A_UUID,    // Some globally unique record id, different per cloned query.
 				records: false,  // The records to be created or changed
 				parameters: {}
 			}
