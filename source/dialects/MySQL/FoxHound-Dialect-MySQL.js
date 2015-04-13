@@ -209,23 +209,64 @@ var FoxHoundDialectMySQL = function()
 			return false;
 		}
 
+		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+
 		var tmpUpdate = '';
 		// If there is more than one record in records, we are going to ignore them for now.
 		var tmpCurrentColumn = 0;
 		for(var tmpColumn in tmpRecords[0])
 		{
-			// TODO: Validate against pParameters.query.schema
+			// No hash table yet, so, we will just linear search it for now.
+			// This uses the schema to decide if we want to treat a column differently on insert
+			var tmpSchemaEntry = {Column:tmpColumn, Type:'Default'};
+			for (var i = 0; i < tmpSchema.length; i++)
+			{
+				if (tmpColumn == tmpSchema[i].Column)
+				{
+					// There is a schema entry for it.  Process it accordingly.
+					tmpSchemaEntry = tmpSchema[i];
+					break;
+				}
+			}
 
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'AutoIdentity':
+				case 'CreateDate':
+				case 'CreateIDUser':
+				case 'DeleteDate':
+				case 'DeleteIDUser':
+					// These are all ignored on update
+					continue;
+					break;				
+			}
 			if (tmpCurrentColumn > 0)
 			{
 				tmpUpdate += ',';
 			}
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'UpdateDate':
+					// This is an autoidentity, so we don't parameterize it and just pass in NULL
+					tmpUpdate += ' NOW()';
+					break;
+				case 'UpdateIDUser':
+					// This is the user ID, which we hope is in the query.
+					// This is how to deal with a normal column
+					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+					tmpUpdate += ' :'+tmpColumnParameter;
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					break;
+				default:
+					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
 
-			var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-			tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
-
-			// Set the query parameter
-			pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+					break;
+			}
 
 			// We use a number to make sure parameters are unique.
 			tmpCurrentColumn++;
@@ -256,25 +297,68 @@ var FoxHoundDialectMySQL = function()
 			return false;
 		}
 
+		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+
+
 		var tmpCreateSet = '';
 		// If there is more than one record in records, we are going to ignore them for now.
 		var tmpCurrentColumn = 0;
 		for(var tmpColumn in tmpRecords[0])
 		{
-			// TODO: Validate against pParameters.query.schema
+			// No hash table yet, so, we will just linear search it for now.
+			// This uses the schema to decide if we want to treat a column differently on insert
+			var tmpSchemaEntry = {Column:tmpColumn, Type:'Default'};
+			for (var i = 0; i < tmpSchema.length; i++)
+			{
+				if (tmpColumn == tmpSchema[i].Column)
+				{
+					// There is a schema entry for it.  Process it accordingly.
+					tmpSchemaEntry = tmpSchema[i];
+					break;
+				}
+			}
 
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'UpdateDate':
+				case 'UpdateIDUser':
+				case 'DeleteDate':
+				case 'DeleteIDUser':
+					// These are all ignored on insert
+					continue;
+					break;				
+			}
 			if (tmpCurrentColumn > 0)
 			{
 				tmpCreateSet += ',';
 			}
-
-			var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-			tmpCreateSet += ' :'+tmpColumnParameter;
-
-			// Set the query parameter
-			pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
-
-			// We use a number to make sure parameters are unique.
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'AutoIdentity':
+					// This is an autoidentity, so we don't parameterize it and just pass in NULL
+					tmpCreateSet += ' NULL';
+					break;
+				case 'CreateDate':
+					// This is an autoidentity, so we don't parameterize it and just pass in NULL
+					tmpCreateSet += ' NOW()';
+					break;
+				case 'CreateIDUser':
+					// This is the user ID, which we hope is in the query.
+					// This is how to deal with a normal column
+					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+					tmpCreateSet += ' :'+tmpColumnParameter;
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					break;
+				default:
+					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+					tmpCreateSet += ' :'+tmpColumnParameter;
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+					break;
+			}
+			// We use an appended number to make sure parameters are unique.
 			tmpCurrentColumn++;
 		}
 
@@ -299,6 +383,9 @@ var FoxHoundDialectMySQL = function()
 		// The records were already validated by generateCreateSetValues
 		var tmpRecords = pParameters.query.records;
 
+		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+
 		var tmpCreateSet = '';
 		// If there is more than one record in records, we are going to ignore them for now.
 		for(var tmpColumn in tmpRecords[0])
@@ -309,7 +396,30 @@ var FoxHoundDialectMySQL = function()
 				tmpCreateSet += ',';
 			}
 
-			tmpCreateSet += ' '+tmpColumn;
+			// No hash table yet, so, we will just linear search it for now.
+			// This uses the schema to decide if we want to treat a column differently on insert
+			var tmpSchemaEntry = {Column:tmpColumn, Type:'Default'};
+			for (var i = 0; i < tmpSchema.length; i++)
+			{
+				if (tmpColumn == tmpSchema[i].Column)
+				{
+					// There is a schema entry for it.  Process it accordingly.
+					tmpSchemaEntry = tmpSchema[i];
+					break;
+				}
+			}
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'UpdateDate':
+				case 'UpdateIDUser':
+				case 'DeleteDate':
+				case 'DeleteIDUser':
+					// These are all ignored on insert
+					break;
+				default:
+					tmpCreateSet += ' '+tmpColumn;
+					break;
+			}
 		}
 
 		return tmpCreateSet;

@@ -61,7 +61,7 @@ var FoxHoundQueryParameters = (
 								// MongoDB: sort()
 
 		// Force a specific query to run regardless of above ... this is used to override the query generator.
-		queryoverride: false,
+		queryOverride: false,
 
 		// Where the generated query goes
 		query: false,
@@ -69,6 +69,7 @@ var FoxHoundQueryParameters = (
 			{
 				body: false,
 				schema: false,   // The schema to intersect with our records
+				IDUser: 0,       // The User ID to stamp into records
 				records: false,  // The records to be created or changed
 				parameters: {}
 			}

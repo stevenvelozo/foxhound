@@ -94,6 +94,7 @@ var FoxHound = function()
 			_Parameters.query = ({
 				body: false,
 				schema: false,   // The schema to intersect with our records
+				IDUser: 0,       // The user to stamp into records
 				records: false,  // The records to be created or changed
 				parameters: {}
 			});
