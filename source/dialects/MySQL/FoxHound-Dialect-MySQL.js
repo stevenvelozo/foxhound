@@ -15,6 +15,8 @@
 * @author Steven Velozo <steven@velozo.com>
 * @class FoxHoundDialectMySQL
 */
+var libUnderscore = require('underscore');
+
 var FoxHoundDialectMySQL = function()
 {
 	/**
@@ -429,6 +431,8 @@ var FoxHoundDialectMySQL = function()
 
 	var Create = function(pParameters)
 	{
+		var tmpTableName = generateTableName(pParameters);
+		var tmpCreateSetList = generateCreateSetList(pParameters);
 		var tmpCreateSetValues = generateCreateSetValues(pParameters);
 
 		if (!tmpCreateSetValues)
@@ -436,12 +440,7 @@ var FoxHoundDialectMySQL = function()
 			return false;
 		}
 
-		return 'INSERT INTO'+
-					generateTableName(pParameters)+
-					' ('+generateCreateSetList(pParameters)+')'+
-				' VALUES'+
-					' ('+tmpCreateSetValues+')'+
-				';';
+		return 'INSERT INTO'+tmpTableName+' ('+tmpCreateSetList+') VALUES ('+tmpCreateSetValues+');';
 	};
 
 
@@ -461,18 +460,35 @@ var FoxHoundDialectMySQL = function()
 	*/
 	var Read = function(pParameters)
 	{
-		return 'SELECT'+
-					generateFieldList(pParameters)+
-				' FROM'+
-					generateTableName(pParameters)+
-				generateWhere(pParameters)+
-				generateOrderBy(pParameters)+
-				generateLimit(pParameters)+
-				';';
+		var tmpFieldList = generateFieldList(pParameters);
+		var tmpTableName = generateTableName(pParameters);
+		var tmpWhere = generateWhere(pParameters);
+		var tmpOrderBy = generateOrderBy(pParameters);
+		var tmpLimit = generateLimit(pParameters);
+
+		if (pParameters.queryOverride)
+		{
+			var tmpQuery = false;
+			try
+			{
+				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit});
+			}
+			catch (pError)
+			{
+				// This pokemon is here to give us a convenient way of not throwing up totally if the query fails.
+				console.log('Error with custom Read Query ['+pParameters.queryOverride+']: '+pError);
+				return false;
+			}
+		}
+
+		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpWhere+tmpOrderBy+tmpLimit+';';
 	};
 
 	var Update = function(pParameters)
 	{
+		var tmpTableName = generateTableName(pParameters);
+		var tmpWhere = generateWhere(pParameters);
 		var tmpUpdateSetters = generateUpdateSetters(pParameters);
 
 		if (!tmpUpdateSetters)
@@ -480,29 +496,23 @@ var FoxHoundDialectMySQL = function()
 			return false;
 		}
 
-		// TODO: Potentially throw a huge warning if there is no WHERE
-		return 'UPDATE'+
-					generateTableName(pParameters)+
-				' SET'+
-					tmpUpdateSetters+
-				generateWhere(pParameters)+
-				';';
+		return 'UPDATE'+tmpTableName+' SET'+tmpUpdateSetters+tmpWhere+';';
 	};
 
 	var Delete = function(pParameters)
 	{
-		return 'DELETE FROM'+
-					generateTableName(pParameters)+
-					generateWhere(pParameters)+
-					';';
+		var tmpTableName = generateTableName(pParameters);
+		var tmpWhere = generateWhere(pParameters);
+
+		return 'DELETE FROM'+tmpTableName+tmpWhere+';';
 	};
 
 	var Count = function(pParameters)
 	{
-		return 'SELECT COUNT(*) AS RowCount FROM'+
-					generateTableName(pParameters)+
-					generateWhere(pParameters)+
-					';';
+		var tmpTableName = generateTableName(pParameters);
+		var tmpWhere = generateWhere(pParameters);
+
+		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpWhere+';';
 	};
 
 	var tmpDialect = ({
