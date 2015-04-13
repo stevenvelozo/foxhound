@@ -239,7 +239,6 @@ var FoxHoundDialectMySQL = function()
 				case 'DeleteIDUser':
 					// These are all ignored on update
 					continue;
-					break;				
 			}
 			if (tmpCurrentColumn > 0)
 			{
@@ -325,7 +324,6 @@ var FoxHoundDialectMySQL = function()
 				case 'DeleteIDUser':
 					// These are all ignored on insert
 					continue;
-					break;				
 			}
 			if (tmpCurrentColumn > 0)
 			{
