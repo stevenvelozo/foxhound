@@ -512,6 +512,22 @@ var FoxHoundDialectMySQL = function()
 		var tmpTableName = generateTableName(pParameters);
 		var tmpWhere = generateWhere(pParameters);
 
+		if (pParameters.queryOverride)
+		{
+			var tmpQuery = false;
+			try
+			{
+				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:''});
+			}
+			catch (pError)
+			{
+				// This pokemon is here to give us a convenient way of not throwing up totally if the query fails.
+				console.log('Error with custom Count Query ['+pParameters.queryOverride+']: '+pError);
+				return false;
+			}
+		}
+
 		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpWhere+';';
 	};
 
