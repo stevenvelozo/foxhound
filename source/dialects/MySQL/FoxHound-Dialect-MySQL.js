@@ -331,11 +331,28 @@ var FoxHoundDialectMySQL = function()
 			{
 				tmpCreateSet += ',';
 			}
+
+			//define a re-usable method for setting up field definitions in a default pattern
+			function buildDefaultDefinition()
+			{
+				var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+				tmpCreateSet += ' :'+tmpColumnParameter;
+				// Set the query parameter
+				pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+			}
+
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'AutoIdentity':
-					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpCreateSet += ' NULL';
+					if (pParameters.query.disableAutoIdentity)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is an autoidentity, so we don't parameterize it and just pass in NULL
+						tmpCreateSet += ' NULL';
+					}
 					break;
 				case 'AutoGUID':
 					// This is an autoidentity, so we don't parameterize it and just pass in NULL
@@ -346,25 +363,37 @@ var FoxHoundDialectMySQL = function()
 					break;
 				case 'UpdateDate':
 				case 'CreateDate':
-					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpCreateSet += ' NOW()';
+					if (pParameters.query.disableAutoDateStamp)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is an autoidentity, so we don't parameterize it and just pass in NULL
+						tmpCreateSet += ' NOW()';
+					}
 					break;
 				case 'UpdateIDUser':
 				case 'CreateIDUser':
-					// This is the user ID, which we hope is in the query.
-					// This is how to deal with a normal column
-					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpCreateSet += ' :'+tmpColumnParameter;
-					// Set the query parameter
-					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					if (pParameters.query.disableAutoUserStamp)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is the user ID, which we hope is in the query.
+						// This is how to deal with a normal column
+						var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+						tmpCreateSet += ' :'+tmpColumnParameter;
+						// Set the query parameter
+						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					}
 					break;
 				default:
-					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpCreateSet += ' :'+tmpColumnParameter;
-					// Set the query parameter
-					pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+					buildDefaultDefinition();
 					break;
 			}
+
 			// We use an appended number to make sure parameters are unique.
 			tmpCurrentColumn++;
 		}
