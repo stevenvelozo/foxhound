@@ -96,6 +96,8 @@ var FoxHound = function()
 			_Parameters = libUnderscore.extend({}, baseParameters, _DefaultParameters);
 			_Parameters.query = ({
 				disableAutoIdentity: false,
+				disableAutoDateStamp: false,
+				disableAutoUserStamp: false,
 				body: false,
 				schema: false,   // The schema to intersect with our records
 				IDUser: 0,       // The user to stamp into records
@@ -524,6 +526,30 @@ var FoxHound = function()
 		}
 
 		/**
+		* Flag to disable auto datestamp
+		*
+		* @method setDisableAutoDateStamp
+		*/
+		var setDisableAutoDateStamp = function(pFlag)
+		{
+			_Parameters.query.disableAutoDateStamp = pFlag;
+
+			return this; //chainable
+		}
+
+		/**
+		* Flag to disable auto userstamp
+		*
+		* @method setDisableAutoUserStamp
+		*/
+		var setDisableAutoUserStamp = function(pFlag)
+		{
+			_Parameters.query.disableAutoUserStamp = pFlag;
+
+			return this; //chainable
+		}
+
+		/**
 		* Check that a valid Dialect has been set
 		*
 		* If there has not been a dialect set, it defaults to English.
@@ -595,6 +621,8 @@ var FoxHound = function()
 
 			addRecord: addRecord,
 			setDisableAutoIdentity: setDisableAutoIdentity,
+			setDisableAutoDateStamp: setDisableAutoDateStamp,
+			setDisableAutoUserStamp: setDisableAutoUserStamp,
 
 			setDialect: setDialect,
 

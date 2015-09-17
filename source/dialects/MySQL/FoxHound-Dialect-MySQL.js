@@ -363,17 +363,31 @@ var FoxHoundDialectMySQL = function()
 					break;
 				case 'UpdateDate':
 				case 'CreateDate':
-					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpCreateSet += ' NOW()';
+					if (pParameters.query.disableAutoDateStamp)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is an autoidentity, so we don't parameterize it and just pass in NULL
+						tmpCreateSet += ' NOW()';
+					}
 					break;
 				case 'UpdateIDUser':
 				case 'CreateIDUser':
-					// This is the user ID, which we hope is in the query.
-					// This is how to deal with a normal column
-					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpCreateSet += ' :'+tmpColumnParameter;
-					// Set the query parameter
-					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					if (pParameters.query.disableAutoUserStamp)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is the user ID, which we hope is in the query.
+						// This is how to deal with a normal column
+						var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+						tmpCreateSet += ' :'+tmpColumnParameter;
+						// Set the query parameter
+						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					}
 					break;
 				default:
 					buildDefaultDefinition();
