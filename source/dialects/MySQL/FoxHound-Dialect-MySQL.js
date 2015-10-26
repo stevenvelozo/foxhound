@@ -78,8 +78,49 @@ var FoxHoundDialectMySQL = function()
 	 */
 	var generateWhere = function(pParameters)
 	{
-		var tmpFilter = pParameters.filter;
-		if (!tmpFilter || tmpFilter.length < 1)
+		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
+		var tmpTableName = generateTableName(pParameters);
+
+		// Check if there is a Deleted column on the Schema. If so, we add this to the filters automatically (if not already present)
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+		for (var i = 0; i < tmpSchema.length; i++)
+		{
+			// There is a schema entry for it.  Process it accordingly.
+			tmpSchemaEntry = tmpSchema[i];
+
+			if (tmpSchemaEntry.Type === 'Deleted')
+			{
+				var tmpHasDeletedParameter = false;
+
+				//first, check to see if filters are already looking for Deleted column
+				if (tmpFilter.length > 0)
+				{
+					for (var x = 0; x < tmpFilter.length; x++)
+					{
+						if (tmpFilter[x].Column === tmpSchemaEntry.Column)
+						{
+							tmpHasDeletedParameter = true;
+							break;
+						}
+					}
+				}
+				if (!tmpHasDeletedParameter)
+				{
+					//if not, we need to add it
+					tmpFilter.push(
+					{
+						Column: tmpTableName + '.' + tmpSchemaEntry.Column,
+						Operator: '=',
+						Value: '0',
+						Connector: 'AND',
+						Parameter: 'Deleted'
+					});
+				}
+				break;
+			}
+		}
+
+		if (tmpFilter.length < 1)
 		{
 			return '';
 		}
@@ -275,6 +316,74 @@ var FoxHoundDialectMySQL = function()
 
 		// We need to tell the query not to generate improperly if there are no values set.
 		if (tmpUpdate === '')
+		{
+			return false;
+		}
+
+		return tmpUpdate;
+	};
+
+	/**
+	 * Generate the update-delete SET clause
+	 *
+	 * @method: generateUpdateDeleteSetters
+	 * @param: {Object} pParameters SQL Query Parameters
+	 * @return: {String} Returns the table name clause
+	 */
+	var generateUpdateDeleteSetters = function(pParameters)
+	{
+		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+
+		var tmpCurrentColumn = 0;
+		var tmpHasDeletedField = false;
+		var tmpUpdate = '';
+		// No hash table yet, so, we will just linear search it for now.
+		// This uses the schema to decide if we want to treat a column differently on insert
+		var tmpSchemaEntry = {Type:'Default'};
+		for (var i = 0; i < tmpSchema.length; i++)
+		{
+			// There is a schema entry for it.  Process it accordingly.
+			tmpSchemaEntry = tmpSchema[i];
+
+			var tmpUpdateSql = null;
+
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'Deleted':
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpHasDeletedField = true; //this field is required in order for query to be built
+					break;
+				case 'DeleteDate':
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					break;
+				case 'DeleteIDUser':
+					// This is the user ID, which we hope is in the query.
+					// This is how to deal with a normal column
+					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					break;
+				default:
+					//DON'T allow update of other fields in this query
+					continue;
+			}
+
+			if (tmpCurrentColumn > 0)
+			{
+				tmpUpdate += ',';
+			}
+
+			tmpUpdate += tmpUpdateSql;
+
+			// We use a number to make sure parameters are unique.
+			tmpCurrentColumn++;
+		}
+
+		// We need to tell the query not to generate improperly if there are no values set.
+		if (!tmpHasDeletedField ||
+			tmpUpdate === '')
 		{
 			return false;
 		}
@@ -532,8 +641,17 @@ var FoxHoundDialectMySQL = function()
 	{
 		var tmpTableName = generateTableName(pParameters);
 		var tmpWhere = generateWhere(pParameters);
+		var tmpUpdateDeleteSetters = generateUpdateDeleteSetters(pParameters);
 
-		return 'DELETE FROM'+tmpTableName+tmpWhere+';';
+		if (tmpUpdateDeleteSetters)
+		{
+			//If it has a deleted bit, update it instead of actually deleting the record
+			return 'UPDATE'+tmpTableName+' SET'+tmpUpdateDeleteSetters+tmpWhere+';';
+		}
+		else
+		{
+			return 'DELETE FROM'+tmpTableName+tmpWhere+';';
+		}
 	};
 
 	var Count = function(pParameters)
