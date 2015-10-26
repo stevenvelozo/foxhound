@@ -79,6 +79,7 @@ var FoxHoundDialectMySQL = function()
 	var generateWhere = function(pParameters)
 	{
 		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
+		var tmpTableName = generateTableName(pParameters);
 
 		// Check if there is a Deleted column on the Schema. If so, we add this to the filters automatically (if not already present)
 		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
@@ -108,7 +109,7 @@ var FoxHoundDialectMySQL = function()
 					//if not, we need to add it
 					tmpFilter.push(
 					{
-						Column: tmpSchemaEntry.Column,
+						Column: tmpTableName + '.' + tmpSchemaEntry.Column,
 						Operator: '=',
 						Value: '0',
 						Connector: 'AND',
