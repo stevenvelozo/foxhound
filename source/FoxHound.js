@@ -412,6 +412,9 @@ var FoxHound = function()
 			var tmpConnector = (typeof(pConnector) === 'undefined') ? 'AND' : pConnector;
 			var tmpParameter = (typeof(pParameter) === 'undefined') ? pColumn : pParameter;
 
+			//support table.field notation (mysql2 requires this)
+			tmpParameter = tmpParameter.replace('.', '_');
+
 			var tmpFilter = (
 				{
 					Column: pColumn,
