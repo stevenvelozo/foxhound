@@ -81,42 +81,45 @@ var FoxHoundDialectMySQL = function()
 		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
 		var tmpTableName = generateTableName(pParameters);
 
-		// Check if there is a Deleted column on the Schema. If so, we add this to the filters automatically (if not already present)
-		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
-		for (var i = 0; i < tmpSchema.length; i++)
+		if (!pParameters.query.disableDeleteTracking)
 		{
-			// There is a schema entry for it.  Process it accordingly.
-			tmpSchemaEntry = tmpSchema[i];
-
-			if (tmpSchemaEntry.Type === 'Deleted')
+			// Check if there is a Deleted column on the Schema. If so, we add this to the filters automatically (if not already present)
+			var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+			for (var i = 0; i < tmpSchema.length; i++)
 			{
-				var tmpHasDeletedParameter = false;
+				// There is a schema entry for it.  Process it accordingly.
+				tmpSchemaEntry = tmpSchema[i];
 
-				//first, check to see if filters are already looking for Deleted column
-				if (tmpFilter.length > 0)
+				if (tmpSchemaEntry.Type === 'Deleted')
 				{
-					for (var x = 0; x < tmpFilter.length; x++)
+					var tmpHasDeletedParameter = false;
+
+					//first, check to see if filters are already looking for Deleted column
+					if (tmpFilter.length > 0)
 					{
-						if (tmpFilter[x].Column === tmpSchemaEntry.Column)
+						for (var x = 0; x < tmpFilter.length; x++)
 						{
-							tmpHasDeletedParameter = true;
-							break;
+							if (tmpFilter[x].Column === tmpSchemaEntry.Column)
+							{
+								tmpHasDeletedParameter = true;
+								break;
+							}
 						}
 					}
-				}
-				if (!tmpHasDeletedParameter)
-				{
-					//if not, we need to add it
-					tmpFilter.push(
+					if (!tmpHasDeletedParameter)
 					{
-						Column: tmpTableName + '.' + tmpSchemaEntry.Column,
-						Operator: '=',
-						Value: '0',
-						Connector: 'AND',
-						Parameter: 'Deleted'
-					});
+						//if not, we need to add it
+						tmpFilter.push(
+						{
+							Column: tmpTableName + '.' + tmpSchemaEntry.Column,
+							Operator: '=',
+							Value: '0',
+							Connector: 'AND',
+							Parameter: 'Deleted'
+						});
+					}
+					break;
 				}
-				break;
 			}
 		}
 
@@ -332,6 +335,11 @@ var FoxHoundDialectMySQL = function()
 	 */
 	var generateUpdateDeleteSetters = function(pParameters)
 	{
+		if (pParameters.query.disableDeleteTracking)
+		{
+			//Don't generate an UPDATE query if Delete tracking is disabled
+			return false;
+		}
 		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
 		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
 

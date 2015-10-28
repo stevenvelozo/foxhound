@@ -98,6 +98,7 @@ var FoxHound = function()
 				disableAutoIdentity: false,
 				disableAutoDateStamp: false,
 				disableAutoUserStamp: false,
+				disableDeleteTracking: false,
 				body: false,
 				schema: false,   // The schema to intersect with our records
 				IDUser: 0,       // The user to stamp into records
@@ -553,6 +554,18 @@ var FoxHound = function()
 		}
 
 		/**
+		* Flag to disable delete tracking
+		*
+		* @method setDisableDeleteTracking
+		*/
+		var setDisableDeleteTracking = function(pFlag)
+		{
+			_Parameters.query.disableDeleteTracking = pFlag;
+
+			return this; //chainable
+		}
+
+		/**
 		* Check that a valid Dialect has been set
 		*
 		* If there has not been a dialect set, it defaults to English.
@@ -626,6 +639,7 @@ var FoxHound = function()
 			setDisableAutoIdentity: setDisableAutoIdentity,
 			setDisableAutoDateStamp: setDisableAutoDateStamp,
 			setDisableAutoUserStamp: setDisableAutoUserStamp,
+			setDisableDeleteTracking: setDisableDeleteTracking,
 
 			setDialect: setDialect,
 
