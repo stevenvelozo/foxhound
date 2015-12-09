@@ -365,6 +365,10 @@ var FoxHoundDialectMySQL = function()
 				case 'DeleteDate':
 					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
 					break;
+				case 'UpdateDate':
+					// Delete operation is an Update, so we should stamp the update time
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					break;
 				case 'DeleteIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
