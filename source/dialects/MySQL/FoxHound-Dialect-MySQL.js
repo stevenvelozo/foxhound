@@ -441,13 +441,16 @@ var FoxHoundDialectMySQL = function()
 				}
 			}
 
-			switch (tmpSchemaEntry.Type)
+			if (!pParameters.query.disableDeleteTracking)
 			{
-				case 'DeleteDate':
-				case 'DeleteIDUser':
-					// These are all ignored on insert
+				if (tmpSchemaEntry.Type === 'DeleteDate' ||
+					tmpSchemaEntry.Type === 'DeleteIDUser')
+				{
+					// These are all ignored on insert (if delete tracking is enabled as normal)
 					continue;
+				}
 			}
+
 			if (tmpCurrentColumn > 0)
 			{
 				tmpCreateSet += ',';
@@ -476,11 +479,18 @@ var FoxHoundDialectMySQL = function()
 					}
 					break;
 				case 'AutoGUID':
-					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpCreateSet += ' :'+tmpColumnParameter;
-					// Set the query parameter
-					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.UUID;
+					if (pParameters.query.disableAutoIdentity)
+					{
+						buildDefaultDefinition();
+					}
+					else
+					{
+						// This is an autoidentity, so we don't parameterize it and just pass in NULL
+						var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+						tmpCreateSet += ' :'+tmpColumnParameter;
+						// Set the query parameter
+						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.UUID;
+					}
 					break;
 				case 'UpdateDate':
 				case 'CreateDate':
@@ -559,12 +569,17 @@ var FoxHoundDialectMySQL = function()
 					break;
 				}
 			}
+			if (!pParameters.query.disableDeleteTracking)
+			{
+				if (tmpSchemaEntry.Type === 'DeleteDate' ||
+					tmpSchemaEntry.Type === 'DeleteIDUser')
+				{
+					// These are all ignored on insert (if delete tracking is enabled as normal)
+					continue;
+				}
+			}
 			switch (tmpSchemaEntry.Type)
 			{
-				case 'DeleteDate':
-				case 'DeleteIDUser':
-					// These are all ignored on insert
-					break;
 				default:
 					if (tmpCreateSet != '')
 					{
