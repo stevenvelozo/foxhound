@@ -276,6 +276,19 @@ var FoxHoundDialectMySQL = function()
 				}
 			}
 
+			if (pParameters.query.disableAutoDateStamp &&
+				tmpSchemaEntry.Type === 'UpdateDate')
+			{
+				// This is ignored if flag is set
+				continue;
+			}
+			if (pParameters.query.disableAutoUserStamp &&
+				tmpSchemaEntry.Type === 'UpdateIDUser')
+			{
+				// This is ignored if flag is set
+				continue;
+			}
+
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'AutoIdentity':
