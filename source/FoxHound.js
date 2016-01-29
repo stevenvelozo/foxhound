@@ -275,6 +275,49 @@ var FoxHound = function()
 
 
 		/**
+		* Add a sort data element
+		*
+		* The passed values can be either a string, an object or an array of objects.
+		*
+		* The Sort object has two values:
+		* {Column:'Birthday', Direction:'Ascending'}
+		*
+		* @method setSort
+		* @param {String} pSort The sort criteria to add to the Query.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var addSort = function(pSort)
+		{
+			var tmpSort = false;
+
+			if (typeof(pSort) === 'string')
+			{
+				// Default to ascending
+				tmpSort = {Column:pSort, Direction:'Ascending'};
+			}
+			if (typeof(pSort) === 'object')
+			{
+				// TODO: Check that this sort entry conforms to a sort entry
+				tmpSort = pSort;
+			}
+
+			if (!_Parameters.sort)
+			{
+				_Parameters.sort = [];
+			}
+
+			_Parameters.sort.push(tmpSort);
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info('Sort set', {queryUUID:_UUID, parameters:_Parameters});
+			}
+
+			return this;
+		};
+
+
+		/**
 		* Set the the Begin index for the Query.  *Begin* is the index at which
 		* a query should start returning rows.  In TSQL this would be the n
 		* parameter of ```LIMIT 1,n```, whereas in MongoDB this would be the
@@ -634,6 +677,7 @@ var FoxHound = function()
 			setFilter: setFilter,
 			addFilter: addFilter,
 			setSort: setSort,
+			addSort: addSort,
 
 			addRecord: addRecord,
 			setDisableAutoIdentity: setDisableAutoIdentity,
