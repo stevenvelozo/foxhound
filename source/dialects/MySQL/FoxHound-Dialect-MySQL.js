@@ -497,7 +497,8 @@ var FoxHoundDialectMySQL = function()
 						buildDefaultDefinition();
 					}
 					else if (tmpRecords[0][tmpColumn] &&
-							tmpRecords[0][tmpColumn].length >= 5)
+							tmpRecords[0][tmpColumn].length >= 5 &&
+							tmpRecords[0][tmpColumn] !== '0x0000000000000000') //stricture default
 					{
 						// Allow consumer to override AutoGUID
 						buildDefaultDefinition();
