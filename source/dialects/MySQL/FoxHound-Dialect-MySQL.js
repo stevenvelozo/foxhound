@@ -496,6 +496,12 @@ var FoxHoundDialectMySQL = function()
 					{
 						buildDefaultDefinition();
 					}
+					else if (tmpRecords[0][tmpColumn] &&
+							tmpRecords[0][tmpColumn].length >= 5)
+					{
+						// Allow consumer to override AutoGUID
+						buildDefaultDefinition();
+					}
 					else
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
