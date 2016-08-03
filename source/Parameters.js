@@ -75,6 +75,9 @@ var FoxHoundQueryParameters = (
 				parameters: {}
 			}
 		*/
+		
+		// Who is making the query
+		userID: 0,
 
 		// Where the query results are stuck
 		result: false

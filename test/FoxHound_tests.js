@@ -248,6 +248,41 @@ suite
 				);
 				test
 				(
+					'change the user ID',
+					function()
+					{
+						var tmpQuery = libFoxHound.new(libFable);
+
+						Expect(tmpQuery.parameters.userID)
+							.to.equal(0);
+
+						tmpQuery.setIDUser(1);
+
+						Expect(tmpQuery.parameters.userID)
+							.to.equal(1);
+						Expect(tmpQuery.parameters.query.IDUser)
+							.to.equal(1);
+					}
+				);
+				test
+				(
+					'fail to change the user ID',
+					function()
+					{
+						var tmpQuery = libFoxHound.new(libFable);
+
+						Expect(tmpQuery.parameters.userID)
+							.to.equal(0);
+
+						tmpQuery.setLogLevel(3);
+						tmpQuery.setIDUser('Disaster');
+
+						Expect(tmpQuery.parameters.userID)
+							.to.equal(0);
+					}
+				);
+				test
+				(
 					'change the begin by function',
 					function()
 					{
