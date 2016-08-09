@@ -1,5 +1,5 @@
 /**
-* FoxHound ALASQLArray Dialect
+* FoxHound ALASQL Dialect
 *
 * @license MIT
 *
@@ -13,11 +13,11 @@
 // The values are empty strings if they aren't set.
 *
 * @author Steven Velozo <steven@velozo.com>
-* @class FoxHoundDialectALASQLArray
+* @class FoxHoundDialectALASQL
 */
 var libUnderscore = require('underscore');
 
-var FoxHoundDialectALASQLArray = function()
+var FoxHoundDialectALASQL = function()
 {
 	/**
 	 * Generate a table name from the scope.
@@ -32,7 +32,7 @@ var FoxHoundDialectALASQLArray = function()
 	 */
 	var generateTableName = function(pParameters)
 	{
-		return ' ?';
+		return ' '+pParameters.scope;
 	};
 
 	/**
@@ -746,11 +746,11 @@ var FoxHoundDialectALASQLArray = function()
 	 */
 	Object.defineProperty(tmpDialect, 'name',
 		{
-			get: function() { return 'ALASQLArray'; },
+			get: function() { return 'ALASQL'; },
 			enumerable: true
 		});
 
 	return tmpDialect;
 };
 
-module.exports = new FoxHoundDialectALASQLArray();
+module.exports = new FoxHoundDialectALASQL();
