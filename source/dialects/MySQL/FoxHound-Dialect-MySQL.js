@@ -113,7 +113,7 @@ var FoxHoundDialectMySQL = function()
 						{
 							Column: tmpTableName + '.' + tmpSchemaEntry.Column,
 							Operator: '=',
-							Value: '0',
+							Value: 0,
 							Connector: 'AND',
 							Parameter: 'Deleted'
 						});
