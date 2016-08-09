@@ -48,7 +48,7 @@ var FoxHoundDialectALASQL = function()
 		{
 			// This could suck if the scope is not the same
 			var tmpTableName = pParameters.scope;
-			if (pColumn.indexOf(tmpTableName+'.'))
+			if (pColumn.indexOf(tmpTableName+'.') > -1)
 			{
 				return '`'+pColumn.replace(tmpTableName+'.', '')+'`';
 			}
