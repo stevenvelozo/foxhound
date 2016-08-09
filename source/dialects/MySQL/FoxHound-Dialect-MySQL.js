@@ -88,7 +88,7 @@ var FoxHoundDialectMySQL = function()
 			for (var i = 0; i < tmpSchema.length; i++)
 			{
 				// There is a schema entry for it.  Process it accordingly.
-				tmpSchemaEntry = tmpSchema[i];
+				var tmpSchemaEntry = tmpSchema[i];
 
 				if (tmpSchemaEntry.Type === 'Deleted')
 				{
@@ -143,32 +143,34 @@ var FoxHoundDialectMySQL = function()
 
 			tmpLastOperatorNoConnector = false;
 
-			if (tmpFilter[i].Operator == '(')
+			var tmpColumnParameter;
+
+			if (tmpFilter[i].Operator === '(')
 			{
 				// Open a logical grouping
 				tmpWhere += ' (';
 				tmpLastOperatorNoConnector = true;
 			}
-			else if (tmpFilter[i].Operator == ')')
+			else if (tmpFilter[i].Operator === ')')
 			{
 				// Close a logical grouping
 				tmpWhere += ' )';
 			}
-			else if (tmpFilter[i].Operator == 'IN')
+			else if (tmpFilter[i].Operator === 'IN')
 			{
-				var tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
+				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
 				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
-			else if (tmpFilter[i].Operator == 'IS NOT NULL')
+			else if (tmpFilter[i].Operator === 'IS NOT NULL')
 			{
 				// IS NOT NULL is a special operator which doesn't require a value, or parameter
 				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
 			}
 			else
 			{
-				var tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
+				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
 				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
@@ -207,7 +209,7 @@ var FoxHoundDialectMySQL = function()
 
 			if (tmpOrderBy[i].Direction == 'Descending')
 			{
-				tmpOrderClause += ' DESC'
+				tmpOrderClause += ' DESC';
 			}
 		}
 		return tmpOrderClause;
@@ -318,11 +320,11 @@ var FoxHoundDialectMySQL = function()
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
 				default:
-					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
+					var tmpColumnDefaultParameter = tmpColumn+'_'+tmpCurrentColumn;
+					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnDefaultParameter;
 
 					// Set the query parameter
-					pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+					pParameters.query.parameters[tmpColumnDefaultParameter] = tmpRecords[0][tmpColumn];
 					break;
 			}
 
@@ -470,14 +472,15 @@ var FoxHoundDialectMySQL = function()
 			}
 
 			//define a re-usable method for setting up field definitions in a default pattern
-			function buildDefaultDefinition()
+			var buildDefaultDefinition = function()
 			{
 				var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
 				tmpCreateSet += ' :'+tmpColumnParameter;
 				// Set the query parameter
 				pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
-			}
+			};
 
+			var tmpColumnParameter;
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'AutoIdentity':
@@ -506,7 +509,7 @@ var FoxHoundDialectMySQL = function()
 					else
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
-						var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+						tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
 						tmpCreateSet += ' :'+tmpColumnParameter;
 						// Set the query parameter
 						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.UUID;
@@ -534,7 +537,7 @@ var FoxHoundDialectMySQL = function()
 					{
 						// This is the user ID, which we hope is in the query.
 						// This is how to deal with a normal column
-						var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
+						tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
 						tmpCreateSet += ' :'+tmpColumnParameter;
 						// Set the query parameter
 						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
@@ -653,7 +656,6 @@ var FoxHoundDialectMySQL = function()
 
 		if (pParameters.queryOverride)
 		{
-			var tmpQuery = false;
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
@@ -708,7 +710,6 @@ var FoxHoundDialectMySQL = function()
 
 		if (pParameters.queryOverride)
 		{
-			var tmpQuery = false;
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
