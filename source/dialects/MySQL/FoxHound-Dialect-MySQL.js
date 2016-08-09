@@ -517,6 +517,7 @@ var FoxHoundDialectMySQL = function()
 					break;
 				case 'UpdateDate':
 				case 'CreateDate':
+				case 'DeleteDate':
 					if (pParameters.query.disableAutoDateStamp)
 					{
 						buildDefaultDefinition();
@@ -527,6 +528,7 @@ var FoxHoundDialectMySQL = function()
 						tmpCreateSet += ' NOW()';
 					}
 					break;
+				case 'DeleteIDUser':
 				case 'UpdateIDUser':
 				case 'CreateIDUser':
 					if (pParameters.query.disableAutoUserStamp)

@@ -529,6 +529,7 @@ var FoxHoundDialectALASQL = function()
 					break;
 				case 'UpdateDate':
 				case 'CreateDate':
+				case 'DeleteDate':
 					if (pParameters.query.disableAutoDateStamp)
 					{
 						buildDefaultDefinition();
@@ -541,6 +542,7 @@ var FoxHoundDialectALASQL = function()
 					break;
 				case 'UpdateIDUser':
 				case 'CreateIDUser':
+				case 'DeleteIDUser':
 					if (pParameters.query.disableAutoUserStamp)
 					{
 						buildDefaultDefinition();
