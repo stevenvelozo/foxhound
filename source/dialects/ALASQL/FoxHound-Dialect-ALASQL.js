@@ -34,6 +34,14 @@ var FoxHoundDialectALASQL = function()
 	{
 		return ' '+pParameters.scope;
 	};
+	
+	/**
+	 * Escape columns, because ALASQL has more reserved KWs than most SQL dialects
+	 */
+	var escapeColumn = (pColumn) =>
+	{
+		return '`'+pColumn.replace('.','`.`')+'`';	
+	};
 
 	/**
 	 * Generate a field list from the array of dataElements
@@ -59,7 +67,7 @@ var FoxHoundDialectALASQL = function()
 			{
 				tmpFieldList += ', ';
 			}
-			tmpFieldList += tmpDataElements[i];
+			tmpFieldList += escapeColumn(tmpDataElements[i]);
 		}
 		return tmpFieldList;
 	};
@@ -83,7 +91,7 @@ var FoxHoundDialectALASQL = function()
 	var generateWhere = function(pParameters)
 	{
 		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
-		var tmpTableName = generateTableName(pParameters);
+		var tmpTableName = generateTableName(pParameters).trim();
 
 		if (!pParameters.query.disableDeleteTracking)
 		{
@@ -164,19 +172,19 @@ var FoxHoundDialectALASQL = function()
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column)+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
 			else if (tmpFilter[i].Operator === 'IS NOT NULL')
 			{
 				// IS NOT NULL is a special operator which doesn't require a value, or parameter
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column)+' '+tmpFilter[i].Operator;
 			}
 			else
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column)+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
 		}
@@ -209,7 +217,7 @@ var FoxHoundDialectALASQL = function()
 			{
 				tmpOrderClause += ',';
 			}
-			tmpOrderClause += ' '+tmpOrderBy[i].Column;
+			tmpOrderClause += ' '+escapeColumn(tmpOrderBy[i].Column);
 
 			if (tmpOrderBy[i].Direction == 'Descending')
 			{
@@ -313,19 +321,19 @@ var FoxHoundDialectALASQL = function()
 			{
 				case 'UpdateDate':
 					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpUpdate += ' '+tmpColumn+' = NOW()';
+					tmpUpdate += ' '+escapeColumn(tmpColumn)+' = NOW()';
 					break;
 				case 'UpdateIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
+					tmpUpdate += ' '+escapeColumn(tmpColumn)+' = :'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
 				default:
 					var tmpColumnDefaultParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnDefaultParameter;
+					tmpUpdate += ' '+escapeColumn(tmpColumn)+' = :'+tmpColumnDefaultParameter;
 
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnDefaultParameter] = tmpRecords[0][tmpColumn];
@@ -378,21 +386,21 @@ var FoxHoundDialectALASQL = function()
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column)+' = 1';
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
 				case 'DeleteDate':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column)+' = NOW()';
 					break;
 				case 'UpdateDate':
 					// Delete operation is an Update, so we should stamp the update time
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column)+' = NOW()';
 					break;
 				case 'DeleteIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column)+' = :'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
@@ -612,7 +620,7 @@ var FoxHoundDialectALASQL = function()
 					{
 						tmpCreateSet += ',';
 					}
-					tmpCreateSet += ' '+tmpColumn;
+					tmpCreateSet += ' '+escapeColumn(tmpColumn);
 					break;
 			}
 		}
