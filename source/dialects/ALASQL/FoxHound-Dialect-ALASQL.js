@@ -1,9 +1,9 @@
 /**
-* FoxHound MySQL Dialect
+* FoxHound ALASQL Dialect
 *
 * @license MIT
 *
-* For a MySQL query override:
+* For an ALASQL query override:
 // An underscore template with the following values:
 //      <%= DataElements %> = Field1, Field2, Field3, Field4
 //      <%= Begin %>        = 0
@@ -13,14 +13,18 @@
 // The values are empty strings if they aren't set.
 *
 * @author Steven Velozo <steven@velozo.com>
-* @class FoxHoundDialectMySQL
+* @class FoxHoundDialectALASQL
 */
 var libUnderscore = require('underscore');
 
-var FoxHoundDialectMySQL = function()
+var FoxHoundDialectALASQL = function()
 {
 	/**
-	 * Generate a table name from the scope
+	 * Generate a table name from the scope.
+	 * 
+	 * Because ALASQL is all in-memory, and can be run in two modes (anonymous
+	 * working on arrays or table-based) we are going to make this a programmable
+	 * value.  Then we can share the code across both providers.
 	 *
 	 * @method: generateTableName
 	 * @param: {Object} pParameters SQL Query Parameters
@@ -28,7 +32,32 @@ var FoxHoundDialectMySQL = function()
 	 */
 	var generateTableName = function(pParameters)
 	{
-		return ' `'+pParameters.scope+'`';
+		return ' '+pParameters.scope;
+	};
+	
+	/**
+	 * Escape columns, because ALASQL has more reserved KWs than most SQL dialects
+	 */
+	var escapeColumn = (pColumn, pParameters) =>
+	{
+		if (pColumn.indexOf('.') < 0)
+		{
+			return '`'+pColumn+'`';
+		}
+		else
+		{
+			// This could suck if the scope is not the same
+			var tmpTableName = pParameters.scope;
+			if (pColumn.indexOf(tmpTableName+'.') > -1)
+			{
+				return '`'+pColumn.replace(tmpTableName+'.', '')+'`';
+			}
+			else
+			{
+				// This doesn't work well but we'll try it.
+				return '`'+pColumn+'`';
+			}
+		}
 	};
 
 	/**
@@ -55,7 +84,7 @@ var FoxHoundDialectMySQL = function()
 			{
 				tmpFieldList += ', ';
 			}
-			tmpFieldList += tmpDataElements[i];
+			tmpFieldList += escapeColumn(tmpDataElements[i], pParameters);
 		}
 		return tmpFieldList;
 	};
@@ -79,7 +108,7 @@ var FoxHoundDialectMySQL = function()
 	var generateWhere = function(pParameters)
 	{
 		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
-		var tmpTableName = generateTableName(pParameters);
+		var tmpTableName = generateTableName(pParameters).trim();
 
 		if (!pParameters.query.disableDeleteTracking)
 		{
@@ -160,19 +189,19 @@ var FoxHoundDialectMySQL = function()
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column, pParameters)+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
 			else if (tmpFilter[i].Operator === 'IS NOT NULL')
 			{
 				// IS NOT NULL is a special operator which doesn't require a value, or parameter
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column, pParameters)+' '+tmpFilter[i].Operator;
 			}
 			else
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
+				tmpWhere += ' '+escapeColumn(tmpFilter[i].Column, pParameters)+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
 		}
@@ -205,7 +234,7 @@ var FoxHoundDialectMySQL = function()
 			{
 				tmpOrderClause += ',';
 			}
-			tmpOrderClause += ' '+tmpOrderBy[i].Column;
+			tmpOrderClause += ' '+escapeColumn(tmpOrderBy[i].Column, pParameters);
 
 			if (tmpOrderBy[i].Direction == 'Descending')
 			{
@@ -309,19 +338,19 @@ var FoxHoundDialectMySQL = function()
 			{
 				case 'UpdateDate':
 					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpUpdate += ' '+tmpColumn+' = NOW()';
+					tmpUpdate += ' '+escapeColumn(tmpColumn, pParameters)+' = NOW()';
 					break;
 				case 'UpdateIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
+					tmpUpdate += ' '+escapeColumn(tmpColumn, pParameters)+' = :'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
 				default:
 					var tmpColumnDefaultParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnDefaultParameter;
+					tmpUpdate += ' '+escapeColumn(tmpColumn, pParameters)+' = :'+tmpColumnDefaultParameter;
 
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnDefaultParameter] = tmpRecords[0][tmpColumn];
@@ -374,21 +403,21 @@ var FoxHoundDialectMySQL = function()
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column, pParameters)+' = 1';
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
 				case 'DeleteDate':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column, pParameters)+' = NOW()';
 					break;
 				case 'UpdateDate':
 					// Delete operation is an Update, so we should stamp the update time
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column, pParameters)+' = NOW()';
 					break;
 				case 'DeleteIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					tmpUpdateSql = ' '+escapeColumn(tmpSchemaEntry.Column, pParameters)+' = :'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
@@ -528,9 +557,9 @@ var FoxHoundDialectMySQL = function()
 						tmpCreateSet += ' NOW()';
 					}
 					break;
-				case 'DeleteIDUser':
 				case 'UpdateIDUser':
 				case 'CreateIDUser':
+				case 'DeleteIDUser':
 					if (pParameters.query.disableAutoUserStamp)
 					{
 						buildDefaultDefinition();
@@ -610,7 +639,7 @@ var FoxHoundDialectMySQL = function()
 					{
 						tmpCreateSet += ',';
 					}
-					tmpCreateSet += ' '+tmpColumn;
+					tmpCreateSet += ' '+escapeColumn(tmpColumn, pParameters);
 					break;
 			}
 		}
@@ -744,11 +773,11 @@ var FoxHoundDialectMySQL = function()
 	 */
 	Object.defineProperty(tmpDialect, 'name',
 		{
-			get: function() { return 'MySQL'; },
+			get: function() { return 'ALASQL'; },
 			enumerable: true
 		});
 
 	return tmpDialect;
 };
 
-module.exports = new FoxHoundDialectMySQL();
+module.exports = new FoxHoundDialectALASQL();

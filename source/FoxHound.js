@@ -561,6 +561,37 @@ var FoxHound = function()
 		};
 
 		/**
+		* User to use for this query
+		*
+		* @method setIDUser
+		*/
+		var setIDUser = function(pIDUser)
+		{
+
+			var tmpUserID = 0;
+
+			if (typeof(pIDUser) === 'number' && (pIDUser % 1) === 0 && pIDUser >= 0)
+			{
+				tmpUserID = pIDUser;
+			}
+			else if (pIDUser !== false)
+			{
+				_Fable.log.error('User set failed; non-positive or non-numeric argument.', {queryUUID:_UUID, parameters:_Parameters, invalidIDUser:pIDUser});
+			}
+
+
+			_Parameters.userID = tmpUserID;
+			_Parameters.query.IDUser = tmpUserID;
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info('IDUser set to: '+tmpUserID, {queryUUID:_UUID, parameters:_Parameters});
+			}
+
+			return this;
+		};
+
+		/**
 		* Flag to disable auto identity
 		*
 		* @method setDisableAutoIdentity
@@ -570,7 +601,7 @@ var FoxHound = function()
 			_Parameters.query.disableAutoIdentity = pFlag;
 
 			return this; //chainable
-		}
+		};
 
 		/**
 		* Flag to disable auto datestamp
@@ -582,7 +613,7 @@ var FoxHound = function()
 			_Parameters.query.disableAutoDateStamp = pFlag;
 
 			return this; //chainable
-		}
+		};
 
 		/**
 		* Flag to disable auto userstamp
@@ -594,7 +625,7 @@ var FoxHound = function()
 			_Parameters.query.disableAutoUserStamp = pFlag;
 
 			return this; //chainable
-		}
+		};
 
 		/**
 		* Flag to disable delete tracking
@@ -606,7 +637,7 @@ var FoxHound = function()
 			_Parameters.query.disableDeleteTracking = pFlag;
 
 			return this; //chainable
-		}
+		};
 
 		/**
 		* Check that a valid Dialect has been set
@@ -671,6 +702,7 @@ var FoxHound = function()
 			setLogLevel: setLogLevel,
 
 			setScope: setScope,
+			setIDUser: setIDUser,
 			setDataElements: setDataElements,
 			setBegin: setBegin,
 			setCap: setCap,
