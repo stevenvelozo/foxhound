@@ -259,13 +259,14 @@ var FoxHoundDialectALASQL = function()
 		}
 
 		var tmpLimit = ' LIMIT';
+		// Cap is required for a limit clause.
+		tmpLimit += ' ' + pParameters.cap;
+
 		// If there is a begin record, we'll pass that in as well.
 		if (pParameters.begin !== false)
 		{
-			tmpLimit += ' ' + pParameters.begin + ',';
+			tmpLimit += ' FETCH ' + pParameters.begin;
 		}
-		// Cap is required for a limit clause.
-		tmpLimit += ' ' + pParameters.cap;
 
 		return tmpLimit;
 	};
