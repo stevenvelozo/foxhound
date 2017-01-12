@@ -20,7 +20,7 @@ var libUnderscore = require('underscore');
 var FoxHoundDialectMySQL = function()
 {
 	//Request time from SQL server with microseconds resolution
-	const SQL_NOW = " NOW(3)";
+	const SQL_NOW = "NOW(3)";
 
 	/**
 	 * Generate a table name from the scope
@@ -528,7 +528,7 @@ var FoxHoundDialectMySQL = function()
 					else
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
-						tmpCreateSet += SQL_NOW;
+						tmpCreateSet += ' ' + SQL_NOW;
 					}
 					break;
 				case 'DeleteIDUser':
