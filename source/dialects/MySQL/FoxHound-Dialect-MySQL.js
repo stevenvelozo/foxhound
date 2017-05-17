@@ -19,6 +19,9 @@ var libUnderscore = require('underscore');
 
 var FoxHoundDialectMySQL = function()
 {
+	//Request time from SQL server with microseconds resolution
+	const SQL_NOW = "NOW(3)";
+
 	/**
 	 * Generate a table name from the scope
 	 *
@@ -314,7 +317,7 @@ var FoxHoundDialectMySQL = function()
 			{
 				case 'UpdateDate':
 					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpUpdate += ' '+tmpColumn+' = NOW()';
+					tmpUpdate += ' '+tmpColumn+' = ' + SQL_NOW;
 					break;
 				case 'UpdateIDUser':
 					// This is the user ID, which we hope is in the query.
@@ -383,11 +386,11 @@ var FoxHoundDialectMySQL = function()
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
 				case 'DeleteDate':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
 					break;
 				case 'UpdateDate':
 					// Delete operation is an Update, so we should stamp the update time
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = NOW()';
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
 					break;
 				case 'DeleteIDUser':
 					// This is the user ID, which we hope is in the query.
@@ -530,7 +533,7 @@ var FoxHoundDialectMySQL = function()
 					else
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
-						tmpCreateSet += ' NOW()';
+						tmpCreateSet += ' ' + SQL_NOW;
 					}
 					break;
 				case 'DeleteIDUser':
