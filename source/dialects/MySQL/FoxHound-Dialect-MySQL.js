@@ -709,7 +709,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpWhere+tmpJoin+tmpOrderBy+tmpLimit+';';
+		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpJoin+tmpWhere+tmpOrderBy+tmpLimit+';';
 	};
 
 	var Update = function(pParameters)
