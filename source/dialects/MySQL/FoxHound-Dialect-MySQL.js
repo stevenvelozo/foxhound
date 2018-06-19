@@ -245,6 +245,35 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
+	 * Generate the join clause
+	 *
+	 * @method: generateJoins
+	 * @param: {Object} pParameters SQL Query Parameters
+	 * @return: {String} Returns the join clause
+	 */
+	var generateJoins = function(pParameters)
+	{
+		var tmpJoins = pParameters.join;
+		if (!Array.isArray(tmpJoins) || tmpJoins.length < 1)
+		{
+			return '';
+		}
+
+		var tmpJoinClause = ''; //ex. ' INNER JOIN';
+		for (var i = 0; i < tmpJoins.length; i++)
+		{
+			var join = tmpJoins[i];
+			//verify that all required fields are valid
+			if (join.Type && join.Table && join.From && join.To)
+			{
+				tmpJoinClause += ` ${join.Type} ${join.Table} ON ${join.From} = ${join.To}`;
+			}
+		}
+
+		return tmpJoinClause;
+	}
+
+	/**
 	 * Generate the update SET clause
 	 *
 	 * @method: generateUpdateSetters
@@ -656,6 +685,7 @@ var FoxHoundDialectMySQL = function()
 		var tmpFieldList = generateFieldList(pParameters);
 		var tmpTableName = generateTableName(pParameters);
 		var tmpWhere = generateWhere(pParameters);
+		var tmpJoin = generateJoins(pParameters);
 		var tmpOrderBy = generateOrderBy(pParameters);
 		var tmpLimit = generateLimit(pParameters);
 
@@ -664,7 +694,7 @@ var FoxHoundDialectMySQL = function()
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit});
 			}
 			catch (pError)
 			{
@@ -674,7 +704,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpWhere+tmpOrderBy+tmpLimit+';';
+		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpWhere+tmpJoin+tmpOrderBy+tmpLimit+';';
 	};
 
 	var Update = function(pParameters)

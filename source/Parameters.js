@@ -60,6 +60,9 @@ var FoxHoundQueryParameters = (
 								// TSQL: ORDER BY
 								// MongoDB: sort()
 
+		join: false,         // ARR of OBJ: The join tables    {Type:'INNER JOIN', Table:'test', From: 'Test.ID', To: 'Scope.IDItem' }
+								// TSQL: JOIN
+
 		// Force a specific query to run regardless of above ... this is used to override the query generator.
 		queryOverride: false,
 
