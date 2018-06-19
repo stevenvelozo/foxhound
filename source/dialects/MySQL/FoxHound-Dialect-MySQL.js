@@ -166,6 +166,11 @@ var FoxHoundDialectMySQL = function()
 				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 			}
+			else if (tmpFilter[i].Operator === 'IS NULL')
+			{
+				// IS NULL is a special operator which doesn't require a value, or parameter
+				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
+			}
 			else if (tmpFilter[i].Operator === 'IS NOT NULL')
 			{
 				// IS NOT NULL is a special operator which doesn't require a value, or parameter
