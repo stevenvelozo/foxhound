@@ -273,6 +273,37 @@ var FoxHound = function()
 			return this;
 		};
 
+		/**
+		* Set the join data element
+		*
+		* The passed values can be either an object or an array of objects.
+		*
+		* The join object has four values:
+		* {Type:'INNER JOIN', Table:'Test', From:'Test.ID', To:'Scope.IDItem'}
+		*
+		* @method setJoin
+		* @param {Object} pJoin The join criteria(s) for the Query.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var setJoin = function(pJoin)
+		{
+			_Parameters.join = [];
+
+			if (Array.isArray(pJoin))
+			{
+				pJoin.forEach(function(join)
+				{
+					addJoin(join.Table, join.From, join.To, join.Type);
+				});
+			}
+			else if (typeof(pJoin) === 'object')
+			{
+				addJoin(pJoin.Table, pJoin.From, pJoin.To, pJoin.Type);
+			}
+
+			return this;
+		}
+
 
 		/**
 		* Add a sort data element
@@ -480,6 +511,63 @@ var FoxHound = function()
 			if (_LogLevel > 2)
 			{
 				_Fable.log.info('Added a filter', {queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter});
+			}
+
+			return this;
+		};
+
+		/**
+		* Add a join expression
+		*
+		* {Type:'INNER JOIN', Table:'Test', From:'Test.ID', To:'Scope.IDItem'}
+		*
+		* @method addJoin
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var addJoin = function(pTable, pFrom, pTo, pType = 'INNER JOIN')
+		{
+			if (typeof(pTable) !== 'string')
+			{
+				_Fable.log.warn('Tried to add an invalid query join table', {queryUUID:_UUID, parameters:_Parameters});
+				return this;
+			}
+			if (typeof(pFrom) === 'undefined' || typeof(pTo) === 'undefined')
+			{
+				_Fable.log.warn('Tried to add an invalid query join field', {queryUUID:_UUID, parameters:_Parameters});
+				return this;
+			}
+			//sanity check the join fields
+			if (pFrom.indexOf(pTable)!=0)
+			{
+				_Fable.log.warn('Tried to add an invalid query join field, join must come FROM the join table!', {queryUUID:_UUID, parameters:_Parameters, invalidField:pFrom});
+				return this;
+			}
+			if (pTo.indexOf('.')<=0)
+			{
+				_Fable.log.warn('Tried to add an invalid query join field, join must go TO a field on another table ([table].[field])!', {queryUUID:_UUID, parameters:_Parameters, invalidField:pTo});
+				return this;
+			}
+
+			var tmpJoin = (
+				{
+					Type: pType,
+					Table: pTable,
+					From: pFrom,
+					To: pTo
+				});
+
+			if (!Array.isArray(_Parameters.join))
+			{
+				_Parameters.join = [tmpJoin];
+			}
+			else
+			{
+				_Parameters.join.push(tmpJoin);
+			}
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info('Added a join', {queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter});
 			}
 
 			return this;
@@ -710,6 +798,8 @@ var FoxHound = function()
 			addFilter: addFilter,
 			setSort: setSort,
 			addSort: addSort,
+			setJoin: setJoin,
+			addJoin, addJoin,
 
 			addRecord: addRecord,
 			setDisableAutoIdentity: setDisableAutoIdentity,
