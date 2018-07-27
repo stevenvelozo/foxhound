@@ -159,7 +159,7 @@ var FoxHoundDialectMySQL = function()
 				// Close a logical grouping
 				tmpWhere += ' )';
 			}
-			else if (tmpFilter[i].Operator === 'IN')
+			else if (tmpFilter[i].Operator === 'IN' || tmpFilter[i].Operator === "NOT IN")
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
