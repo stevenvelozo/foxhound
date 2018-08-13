@@ -302,7 +302,7 @@ var FoxHound = function()
 			}
 
 			return this;
-		}
+		};
 
 
 		/**
@@ -524,7 +524,7 @@ var FoxHound = function()
 		* @method addJoin
 		* @return {Object} Returns the current Query for chaining.
 		*/
-		var addJoin = function(pTable, pFrom, pTo, pType = 'INNER JOIN')
+		var addJoin = function(pTable, pFrom, pTo, pType)
 		{
 			if (typeof(pTable) !== 'string')
 			{
@@ -547,10 +547,12 @@ var FoxHound = function()
 				_Fable.log.warn('Tried to add an invalid query join field, join must go TO a field on another table ([table].[field])!', {queryUUID:_UUID, parameters:_Parameters, invalidField:pTo});
 				return this;
 			}
+			
+			let tmpType = (typeof(pType) === 'undefined') ?  'INNER JOIN' : pType;
 
 			var tmpJoin = (
 				{
-					Type: pType,
+					Type: tmpType,
 					Table: pTable,
 					From: pFrom,
 					To: pTo
@@ -567,7 +569,7 @@ var FoxHound = function()
 
 			if (_LogLevel > 2)
 			{
-				_Fable.log.info('Added a join', {queryUUID:_UUID, parameters:_Parameters, newFilter:tmpFilter});
+				_Fable.log.info('Added a join', {queryUUID:_UUID, parameters:_Parameters});
 			}
 
 			return this;
@@ -799,7 +801,7 @@ var FoxHound = function()
 			setSort: setSort,
 			addSort: addSort,
 			setJoin: setJoin,
-			addJoin, addJoin,
+			addJoin: addJoin,
 
 			addRecord: addRecord,
 			setDisableAutoIdentity: setDisableAutoIdentity,
