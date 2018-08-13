@@ -548,7 +548,7 @@ var FoxHound = function()
 				return this;
 			}
 			
-			let tmpType = (typeof(pType) === 'undefined') ?  'INNER JOIN' : pType;
+			var tmpType = (typeof(pType) === 'undefined') ?  'INNER JOIN' : pType;
 
 			var tmpJoin = (
 				{
