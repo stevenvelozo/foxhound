@@ -746,6 +746,7 @@ var FoxHoundDialectMySQL = function()
 	var Count = function(pParameters)
 	{
 		var tmpTableName = generateTableName(pParameters);
+		var tmpJoin = generateJoins(pParameters);
 		var tmpWhere = generateWhere(pParameters);
 
 		if (pParameters.queryOverride)
@@ -763,7 +764,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpWhere+';';
+		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpJoin+tmpWhere+';';
 	};
 
 	var tmpDialect = ({
