@@ -31,7 +31,10 @@ var FoxHoundDialectMySQL = function()
 	 */
 	var generateTableName = function(pParameters)
 	{
-		return ' `'+pParameters.scope+'`';
+		if (pParameters.scope && pParameters.scope.indexOf('`') >= 0)
+			return ' '+pParameters.scope+'';
+		else
+			return ' `'+pParameters.scope+'`';
 	};
 
 	/**
