@@ -51,7 +51,7 @@ var FoxHoundDialectMySQL = function()
 		var tmpDataElements = pParameters.dataElements;
 		if (!Array.isArray(tmpDataElements) || tmpDataElements.length < 1)
 		{
-			return ' *';
+			return generateTableName(pParameters) + '.*';
 		}
 
 		var tmpFieldList = ' ';
