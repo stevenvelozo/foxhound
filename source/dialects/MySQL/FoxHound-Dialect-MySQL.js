@@ -31,7 +31,10 @@ var FoxHoundDialectMySQL = function()
 	 */
 	var generateTableName = function(pParameters)
 	{
-		return ' `'+pParameters.scope+'`';
+		if (pParameters.scope && pParameters.scope.indexOf('`') >= 0)
+			return ' '+pParameters.scope+'';
+		else
+			return ' `'+pParameters.scope+'`';
 	};
 
 	/**
@@ -48,7 +51,7 @@ var FoxHoundDialectMySQL = function()
 		var tmpDataElements = pParameters.dataElements;
 		if (!Array.isArray(tmpDataElements) || tmpDataElements.length < 1)
 		{
-			return ' *';
+			return generateTableName(pParameters) + '.*';
 		}
 
 		var tmpFieldList = ' ';
@@ -58,10 +61,37 @@ var FoxHoundDialectMySQL = function()
 			{
 				tmpFieldList += ', ';
 			}
-			tmpFieldList += tmpDataElements[i];
+			if (Array.isArray(tmpDataElements[i]))
+			{
+				tmpFieldList += generateSafeFieldName(tmpDataElements[i][0]);
+				if (tmpDataElements[i].length > 1 && tmpDataElements[i][1])
+				{
+					tmpFieldList += " AS " + generateSafeFieldName(tmpDataElements[i][1]);
+				}
+			}
+			else
+			{
+				tmpFieldList += generateSafeFieldName(tmpDataElements[i]);
+			}
 		}
 		return tmpFieldList;
 	};
+
+	/**
+	 * Ensure a field name is properly escaped.
+	 */
+	var generateSafeFieldName = function(pFieldName)
+	{
+		pFieldNames = pFieldName.replace('`', '').split('.');
+		if (pFieldNames.length > 1)
+		{
+			return "`" + pFieldNames[0] + "`.`" + pFieldNames[1] + "`";
+		}
+		else
+		{
+			return "`" + pFieldNames[0] + "`";
+		}
+	}
 
 	/**
 	 * Generate a query from the array of where clauses
