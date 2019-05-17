@@ -1,12 +1,13 @@
 {
   "name": "foxhound",
-  "version": "1.0.30",
+  "version": "2.0.0",
   "description": "A Database Query generation library.",
   "main": "source/FoxHound.js",
   "scripts": {
     "start": "node source/FoxHound.js",
-    "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
-    "test": "./node_modules/mocha/bin/_mocha -u tdd -R spec"
+    "coverage": "./node_modules/nyc/bin/nyc.js --reporter=lcov --reporter=text-lcov ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
+    "test": "./node_modules/mocha/bin/_mocha -u tdd -R spec",
+    "harness": "node debug/Harness.js"
   },
   "repository": {
     "type": "git",
@@ -24,14 +25,23 @@
   },
   "homepage": "https://github.com/stevenvelozo/foxhound",
   "devDependencies": {
-    "chai": "3.4.1",
-    "codeclimate-test-reporter": "0.1.1",
-    "coveralls": "2.11.4",
-    "istanbul": "0.4.1",
-    "mocha": "2.3.4"
+    "@babel/core": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "async": "^2.6.2",
+    "browserify": "^16.2.3",
+    "chai": "4.2.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-terser": "^1.1.7",
+    "gulp-util": "^3.0.8",
+    "mocha": "6.1.4",
+    "nyc": "^14.1.0",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "fable": "~1.0.1",
-    "underscore": "1.8.3"
+    "fable": "~2.0.0",
+    "underscore": "1.9.1"
   }
 }
