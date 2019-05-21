@@ -10,7 +10,23 @@
 */
 class FoxHoundDialectBase
 {
-	var Create = function(pParameters)
+    constructor()
+    {
+
+    }
+
+	/**
+	 * Dialect Name
+	 *
+	 * @method name
+	 * @type string
+	 */
+	get name()
+    {
+        return 'English';
+    };
+
+    Create (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
@@ -20,66 +36,43 @@ class FoxHoundDialectBase
 	/**
 	* Read one or many records
 	*
-	* Some examples:
-	* Please give me all your Widget records.  Thanks.
-	* Please give me 20 Widget records.  Thanks.
-	* Please give me 20 Widget records starting with record 5.  Thanks.
-	* Please give me the ID, Name and Cost of 20 Widget records starting with record 5.  Thanks.
-	* Please give me the ID and Name of 20 Widget records starting with record 5, when LastName equals "Smith".  Thanks.
-	*
 	* @method Read
-	* @param {Number} pLogLevel The log level for our object
-	* @return {String} Returns the current Query for chaining.
+	* @param {Object} pParameters The query parameters.
+	* @return {String} Returns the current Query string.
 	*/
-	var Read = function(pParameters)
+	Read (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
 		return 'Please give me all your '+tmpScope+' records.  Thanks.';
 	};
 
-	var Update = function(pParameters)
+	Update (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
 		return 'I am changing your '+tmpScope+'.';
 	};
 
-	var Delete = function(pParameters)
+	Delete (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
 		return 'I am deleting your '+tmpScope+'.';
 	};
 
-	var Count = function(pParameters)
+	Count (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
 		return 'Count your '+tmpScope+'.';
 	};
-
-	var tmpDialect = ({
-		Create: Create,
-		Read: Read,
-		Update: Update,
-		Delete: Delete,
-		Count: Count
-	});
-
-	/**
-	 * Dialect Name
-	 *
-	 * @property name
-	 * @type string
-	 */
-	Object.defineProperty(tmpDialect, 'name',
-		{
-			get: function() { return 'English'; },
-			enumerable: true
-		});
-
-	return tmpDialect;
 };
 
-module.exports = FoxHoundDialectBase;
+// This is for backwards compatibility
+function autoConstruct(pSettings)
+{
+	return new FoxHoundDialectBase(pSettings);
+}
+
+module.exports =  {new:autoConstruct, FoxHoundDialectBase:FoxHoundDialectBase};
