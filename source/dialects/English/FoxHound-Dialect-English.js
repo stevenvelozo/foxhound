@@ -9,78 +9,50 @@
 * @author Steven Velozo <steven@velozo.com>
 * @class FoxHoundDialectEnglish
 */
-var FoxHoundDialectEnglish = function()
+let baseFoxHoundDialect = require('../../Foxhound-Dialect-Base.js');
+
+class FoxHoundDialectEnglish extends baseFoxHoundDialect
 {
-	var Create = function(pParameters)
+	constructor ()
 	{
-		var tmpScope = pParameters.scope;
-
-		return 'Here is a '+tmpScope+'.';
-	};
-
-	/**
-	* Read one or many records
-	*
-	* Some examples:
-	* Please give me all your Widget records.  Thanks.
-	* Please give me 20 Widget records.  Thanks.
-	* Please give me 20 Widget records starting with record 5.  Thanks.
-	* Please give me the ID, Name and Cost of 20 Widget records starting with record 5.  Thanks.
-	* Please give me the ID and Name of 20 Widget records starting with record 5, when LastName equals "Smith".  Thanks.
-	*
-	* @method Read
-	* @param {Number} pLogLevel The log level for our object
-	* @return {String} Returns the current Query for chaining.
-	*/
-	var Read = function(pParameters)
-	{
-		var tmpScope = pParameters.scope;
-
-		return 'Please give me all your '+tmpScope+' records.  Thanks.';
-	};
-
-	var Update = function(pParameters)
-	{
-		var tmpScope = pParameters.scope;
-
-		return 'I am changing your '+tmpScope+'.';
-	};
-
-	var Delete = function(pParameters)
-	{
-		var tmpScope = pParameters.scope;
-
-		return 'I am deleting your '+tmpScope+'.';
-	};
-
-	var Count = function(pParameters)
-	{
-		var tmpScope = pParameters.scope;
-
-		return 'Count your '+tmpScope+'.';
-	};
-
-	var tmpDialect = ({
-		Create: Create,
-		Read: Read,
-		Update: Update,
-		Delete: Delete,
-		Count: Count
-	});
+		super();
+	}
 
 	/**
 	 * Dialect Name
 	 *
-	 * @property name
+	 * @method name
 	 * @type string
 	 */
-	Object.defineProperty(tmpDialect, 'name',
-		{
-			get: function() { return 'English'; },
-			enumerable: true
-		});
+	get name()
+    {
+    	return 'English';
+    }
 
-	return tmpDialect;
-};
+	Create (pParameters)
+	{
+		return `Make your own ${this.scope} records.  Thanks for asking me to, though.`;
+	}
 
-module.exports = new FoxHoundDialectEnglish();
+	Read (pParameters)
+	{
+		return `Please give me all your ${this.scope} records.  Thanks.`;
+	}
+
+	Update (pParameters)
+	{
+		return `Changing ${this.scope} records is impossible.  Because change is hard.`;
+	}
+
+	Delete(pParameters)
+	{
+		return `I don't know how to delete ${this.scope} records.  Sorry.`;
+	}
+
+	Count(pParameters)
+	{
+		return `You are going to have to count your ${this.scope} records yourself.  Apologies.`;
+	}
+}
+
+module.exports = FoxHoundDialectEnglish;

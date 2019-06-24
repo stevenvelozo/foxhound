@@ -1,10 +1,7 @@
 /**
-* Query Parameters Object
-*
-* @class FoxHoundQueryParameters
-* @constructor
+* Query Parameter Prototype Object
 */
-var FoxHoundQueryParameters = (
+module.exports = (
 {
 		scope: false,        // STR: The scope of the data
 								// TSQL: the "Table" or "View"
@@ -92,5 +89,3 @@ var FoxHoundQueryParameters = (
 			}
 		*/
 });
-
-module.exports = FoxHoundQueryParameters;

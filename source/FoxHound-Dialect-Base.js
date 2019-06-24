@@ -12,62 +12,41 @@ class FoxHoundDialectBase
 {
     constructor()
     {
-
+    	this.scope = `UnknownRecordType`;
     }
 
-	/**
-	 * Dialect Name
-	 *
-	 * @method name
-	 * @type string
-	 */
 	get name()
     {
-        return 'English';
-    };
+    	return 'Unnamed Dialect';
+    }
 
     Create (pParameters)
 	{
-		var tmpScope = pParameters.scope;
+		return `Create behavior not overloaded for dialect ${this.name} scope ${this.scope}.`;
+	}
 
-		return 'Here is a '+tmpScope+'.';
-	};
-
-	/**
-	* Read one or many records
-	*
-	* @method Read
-	* @param {Object} pParameters The query parameters.
-	* @return {String} Returns the current Query string.
-	*/
 	Read (pParameters)
 	{
-		var tmpScope = pParameters.scope;
-
-		return 'Please give me all your '+tmpScope+' records.  Thanks.';
-	};
+		return `Read behavior not overloaded for dialect ${this.name} scope ${this.scope}.`;
+	}
 
 	Update (pParameters)
 	{
 		var tmpScope = pParameters.scope;
 
-		return 'I am changing your '+tmpScope+'.';
-	};
+		return ``;
+	}
 
 	Delete (pParameters)
 	{
-		var tmpScope = pParameters.scope;
-
-		return 'I am deleting your '+tmpScope+'.';
-	};
+		return `Delete behavior not overloaded for dialect ${this.name} scope ${this.scope}.`;
+	}
 
 	Count (pParameters)
 	{
-		var tmpScope = pParameters.scope;
-
-		return 'Count your '+tmpScope+'.';
-	};
-};
+		return `Count behavior not overloaded for dialect ${this.name} scope ${this.scope}.`;
+	}
+}
 
 // This is for backwards compatibility
 function autoConstruct(pSettings)
@@ -75,4 +54,4 @@ function autoConstruct(pSettings)
 	return new FoxHoundDialectBase(pSettings);
 }
 
-module.exports =  {new:autoConstruct, FoxHoundDialectBase:FoxHoundDialectBase};
+module.exports = FoxHoundDialectBase;

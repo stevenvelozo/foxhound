@@ -11,7 +11,7 @@
 var libUnderscore = require('underscore');
 
 // Load our base parameters skeleton object
-var baseParameters = require('./Parameters.js');
+var baseParameters = require('./FoxHound-ParameterPrototype.js');
 
 /**
 * FoxHound Query Generation Library Main Class
@@ -635,7 +635,7 @@ var FoxHound = function()
 			try
 			{
 				var tmpDialectModule = require(tmpDialectModuleFile);
-				_Dialect = tmpDialectModule;
+				_Dialect = new tmpDialectModule();
 				if (_LogLevel > 2)
 				{
 					_Fable.log.info('Dialog set to: '+pDialectName, {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile});
@@ -643,7 +643,7 @@ var FoxHound = function()
 			}
 			catch (pError)
 			{
-				_Fable.log.error('Dialect not set - require load problem', {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError});
+				_Fable.log.error(`Dialect not set - require load problem: ${pError}`, {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError});
 				setDialect('English');
 			}
 
@@ -737,46 +737,47 @@ var FoxHound = function()
 		*
 		* @method checkDialect
 		*/
-		var checkDialect = function()
+		var checkDialect = function(pParameters)
 		{
 			if (_Dialect === false)
 			{
 				setDialect('English');
 			}
+			_Dialect.scope = pParameters.scope;
 		};
 
 
 		var buildCreateQuery = function()
 		{
-			checkDialect();
+			checkDialect(_Parameters);
 			_Parameters.query.body = _Dialect.Create(_Parameters);
 			return this;
 		};
 
 		var buildReadQuery = function()
 		{
-			checkDialect();
+			checkDialect(_Parameters);
 			_Parameters.query.body = _Dialect.Read(_Parameters);
 			return this;
 		};
 
 		var buildUpdateQuery = function()
 		{
-			checkDialect();
+			checkDialect(_Parameters);
 			_Parameters.query.body = _Dialect.Update(_Parameters);
 			return this;
 		};
 
 		var buildDeleteQuery = function()
 		{
-			checkDialect();
+			checkDialect(_Parameters);
 			_Parameters.query.body = _Dialect.Delete(_Parameters);
 			return this;
 		};
 
 		var buildCountQuery = function()
 		{
-			checkDialect();
+			checkDialect(_Parameters);
 			_Parameters.query.body = _Dialect.Count(_Parameters);
 			return this;
 		};
