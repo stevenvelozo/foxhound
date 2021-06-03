@@ -10,7 +10,7 @@ var Chai = require('chai');
 var Expect = Chai.expect;
 var Assert = Chai.assert;
 
-var libFable = require('fable');
+var libFable = require('fable').new({});
 var libFoxHound = require('../source/FoxHound.js');
 
 suite
@@ -125,7 +125,7 @@ suite
 						Expect(tmpQuery.query.body)
 							.to.equal('SELECT `Widget`.* FROM `Widget`;');
 
-						
+
 					}
 				);
 			}
@@ -408,7 +408,7 @@ suite
 						tmpQuery.addRecord({ID:100});
 						tmpQuery.addRecord({ID:1000});
 						Expect(tmpQuery.query.records.length)
-							.to.equal(3);					
+							.to.equal(3);
 					}
 				);
 			}

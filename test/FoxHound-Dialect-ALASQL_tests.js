@@ -10,7 +10,7 @@ var Chai = require('chai');
 var Expect = Chai.expect;
 var Assert = Chai.assert;
 
-var libFable = require('fable');
+var libFable = require('fable').new({});
 var libFoxHound = require('../source/FoxHound.js');
 
 var _AnimalSchema = (
@@ -339,15 +339,15 @@ suite
 							.setScope('Animal')
 							.addRecord(
 							{
-								IDAnimal:false, 
-								GUIDAnimal:false, 
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
-								UpdatingIDUser:false, 
-								Deleted:false, 
-								DeletingIDUser:false, 
-								DeleteDate:false, 
+								IDAnimal:false,
+								GUIDAnimal:false,
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
+								UpdatingIDUser:false,
+								Deleted:false,
+								DeletingIDUser:false,
+								DeleteDate:false,
 								Name:'Froo Froo',
 								Age:18
 							});
@@ -371,15 +371,15 @@ suite
 							.setScope('Animal')
 							.addRecord(
 							{
-								IDAnimal:false, 
+								IDAnimal:false,
 								GUIDAnimal:'0xabcdef',
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
-								UpdatingIDUser:false, 
-								Deleted:false, 
-								DeletingIDUser:false, 
-								DeleteDate:false, 
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
+								UpdatingIDUser:false,
+								Deleted:false,
+								DeletingIDUser:false,
+								DeleteDate:false,
 								Name:'Froo Froo',
 								Age:18
 							});
@@ -407,15 +407,15 @@ suite
 							.setDisableAutoUserStamp(true)
 							.addRecord(
 							{
-								IDAnimal:false, 
-								GUIDAnimal:false, 
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
-								UpdatingIDUser:false, 
-								Deleted:false, 
-								DeletingIDUser:false, 
-								DeleteDate:false, 
+								IDAnimal:false,
+								GUIDAnimal:false,
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
+								UpdatingIDUser:false,
+								Deleted:false,
+								DeletingIDUser:false,
+								DeleteDate:false,
 								Name:'Froo Froo',
 								Age:18
 							});
@@ -531,11 +531,11 @@ suite
 							.setScope('Animal')
 							.addFilter('IDAnimal', 9)
 							.addRecord({
-								IDAnimal:82, 
-								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777', 
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
+								IDAnimal:82,
+								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777',
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
 								UpdatingIDUser:false,
 								Name:'Froo Froo',
 								Age:18
@@ -561,11 +561,11 @@ suite
 							.setDisableAutoUserStamp(true)
 							.setDisableAutoDateStamp(true)
 							.addRecord({
-								IDAnimal:82, 
-								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777', 
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
+								IDAnimal:82,
+								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777',
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
 								UpdatingIDUser:false,
 								Name:'Froo Froo',
 								Age:18
@@ -612,15 +612,15 @@ suite
 							.addFilter('IDAnimal', 9)
 							.addFilter('Deleted', 0) //cover case where this can be overridden instead of automatically added
 							.addRecord({
-								IDAnimal:82, 
-								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777', 
-								CreateDate:false, 
-								CreatingIDUser:false, 
-								UpdateDate:false, 
-								UpdatingIDUser:false, 
-								Deleted:false, 
-								DeletingIDUser:false, 
-								DeleteDate:false, 
+								IDAnimal:82,
+								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777',
+								CreateDate:false,
+								CreatingIDUser:false,
+								UpdateDate:false,
+								UpdatingIDUser:false,
+								Deleted:false,
+								DeletingIDUser:false,
+								DeleteDate:false,
 								Name:'Froo Froo',
 								Age:18
 							});
@@ -643,7 +643,7 @@ suite
 							.setScope('Animal')
 							.addFilter('IDAnimal', 9)
 							.addRecord({
-								IDAnimal:82, 
+								IDAnimal:82,
 								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777'
 							});
 						tmpQuery.query.schema = _AnimalSchema;
@@ -666,7 +666,7 @@ suite
 							.setDisableDeleteTracking(true)
 							.addFilter('IDAnimal', 9)
 							.addRecord({
-								IDAnimal:82, 
+								IDAnimal:82,
 								GUIDAnimal:'1111-2222-3333-4444-5555-6666-7777'
 							});
 						tmpQuery.query.schema = _AnimalSchema;

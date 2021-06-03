@@ -24,7 +24,7 @@ var FoxHound = function()
 	function createNew(pFable, pFromParameters)
 	{
 		// If a valid Fable object isn't passed in, return a constructor
-		if ((typeof(pFable) !== 'object') || (!pFable.hasOwnProperty('fable')))
+		if ((typeof(pFable) !== 'object') || !('fable' in pFable))
 		{
 			return {new: createNew};
 		}
@@ -116,7 +116,7 @@ var FoxHound = function()
 			return this;
 		};
 		resetParameters();
-		
+
 		/**
 		* Reset the parameters of the FoxHound Query to the Default.  Default
 		* parameters were set during object construction.
@@ -547,7 +547,7 @@ var FoxHound = function()
 				_Fable.log.warn('Tried to add an invalid query join field, join must go TO a field on another table ([table].[field])!', {queryUUID:_UUID, parameters:_Parameters, invalidField:pTo});
 				return this;
 			}
-			
+
 			var tmpType = (typeof(pType) === 'undefined') ?  'INNER JOIN' : pType;
 
 			var tmpJoin = (
