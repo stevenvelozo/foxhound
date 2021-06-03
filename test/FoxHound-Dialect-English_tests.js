@@ -10,7 +10,7 @@ var Chai = require('chai');
 var Expect = Chai.expect;
 var Assert = Chai.assert;
 
-var libFable = require('fable');
+var libFable = require('fable').new({});
 var libFoxHound = require('../source/FoxHound.js');
 
 suite
