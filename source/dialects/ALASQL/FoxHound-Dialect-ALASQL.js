@@ -739,9 +739,9 @@ var FoxHoundDialectALASQL = function()
 	var Count = function(pParameters)
 	{
 		var tmpTableName = generateTableName(pParameters);
-		var tmpFieldList = generateFieldList(pParameters);
 		var tmpWhere = generateWhere(pParameters);
 		const tmpOptDistinct = pParameters.distinct ? 'DISTINCT' : '';
+		const tmpCountClause = pParameters.distinct ? `${tmpOptDistinct}${generateFieldList(pParameters)}` : '*';
 
 		if (pParameters.queryOverride)
 		{
@@ -758,7 +758,7 @@ var FoxHoundDialectALASQL = function()
 			}
 		}
 
-		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList}) AS RowCount FROM${tmpTableName}${tmpWhere};`;
+		return `SELECT COUNT(${tmpCountClause}) AS RowCount FROM${tmpTableName}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({
