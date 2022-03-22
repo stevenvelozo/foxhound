@@ -21,7 +21,7 @@ var FoxHoundDialectALASQL = function()
 {
 	/**
 	 * Generate a table name from the scope.
-	 * 
+	 *
 	 * Because ALASQL is all in-memory, and can be run in two modes (anonymous
 	 * working on arrays or table-based) we are going to make this a programmable
 	 * value.  Then we can share the code across both providers.
@@ -34,7 +34,7 @@ var FoxHoundDialectALASQL = function()
 	{
 		return ' '+pParameters.scope;
 	};
-	
+
 	/**
 	 * Escape columns, because ALASQL has more reserved KWs than most SQL dialects
 	 */
@@ -94,10 +94,10 @@ var FoxHoundDialectALASQL = function()
 	 *
 	 * Each clause is an object like:
 		{
-			Column:'Name', 
-			Operator:'EQ', 
-			Value:'John', 
-			Connector:'And', 
+			Column:'Name',
+			Operator:'EQ',
+			Value:'John',
+			Connector:'And',
 			Parameter:'Name'
 		}
 	 *
@@ -685,13 +685,14 @@ var FoxHoundDialectALASQL = function()
 		var tmpWhere = generateWhere(pParameters);
 		var tmpOrderBy = generateOrderBy(pParameters);
 		var tmpLimit = generateLimit(pParameters);
+		const tmpOptDistinct = pParameters.distinct ? ' DISTINCT' : '';
 
 		if (pParameters.queryOverride)
 		{
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct});
 			}
 			catch (pError)
 			{
@@ -701,7 +702,7 @@ var FoxHoundDialectALASQL = function()
 			}
 		}
 
-		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpWhere+tmpOrderBy+tmpLimit+';';
+		return `SELECT${tmpOptDistinct}${tmpFieldList} FROM${tmpTableName}${tmpWhere}${tmpOrderBy}${tmpLimit};`;
 	};
 
 	var Update = function(pParameters)
@@ -738,14 +739,16 @@ var FoxHoundDialectALASQL = function()
 	var Count = function(pParameters)
 	{
 		var tmpTableName = generateTableName(pParameters);
+		var tmpFieldList = generateFieldList(pParameters);
 		var tmpWhere = generateWhere(pParameters);
+		const tmpOptDistinct = pParameters.distinct ? 'DISTINCT' : '';
 
 		if (pParameters.queryOverride)
 		{
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:''});
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct});
 			}
 			catch (pError)
 			{
@@ -755,7 +758,7 @@ var FoxHoundDialectALASQL = function()
 			}
 		}
 
-		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpWhere+';';
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList}) AS RowCount FROM${tmpTableName}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({

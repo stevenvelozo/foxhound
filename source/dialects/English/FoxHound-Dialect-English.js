@@ -35,8 +35,9 @@ var FoxHoundDialectEnglish = function()
 	var Read = function(pParameters)
 	{
 		var tmpScope = pParameters.scope;
+		const tmpDistinct = pParameters.distinct ? 'unique ' : '';
 
-		return 'Please give me all your '+tmpScope+' records.  Thanks.';
+		return `Please give me all your ${tmpDistinct}${tmpScope} records.  Thanks.`;
 	};
 
 	var Update = function(pParameters)
@@ -56,8 +57,9 @@ var FoxHoundDialectEnglish = function()
 	var Count = function(pParameters)
 	{
 		var tmpScope = pParameters.scope;
+		const tmpDistinct = pParameters.distinct ? 'unique ' : '';
 
-		return 'Count your '+tmpScope+'.';
+		return `Count your ${tmpDistinct}${tmpScope}.`;
 	};
 
 	var tmpDialect = ({
