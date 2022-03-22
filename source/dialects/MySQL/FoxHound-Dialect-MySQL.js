@@ -98,10 +98,10 @@ var FoxHoundDialectMySQL = function()
 	 *
 	 * Each clause is an object like:
 		{
-			Column:'Name', 
-			Operator:'EQ', 
-			Value:'John', 
-			Connector:'And', 
+			Column:'Name',
+			Operator:'EQ',
+			Value:'John',
+			Connector:'And',
 			Parameter:'Name'
 		}
 	 *
@@ -723,13 +723,14 @@ var FoxHoundDialectMySQL = function()
 		var tmpJoin = generateJoins(pParameters);
 		var tmpOrderBy = generateOrderBy(pParameters);
 		var tmpLimit = generateLimit(pParameters);
+		const tmpOptDistinct = pParameters.distinct ? ' DISTINCT' : '';
 
 		if (pParameters.queryOverride)
 		{
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct});
 			}
 			catch (pError)
 			{
@@ -739,7 +740,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return 'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpJoin+tmpWhere+tmpOrderBy+tmpLimit+';';
+		return `SELECT${tmpOptDistinct}${tmpFieldList} FROM${tmpTableName}${tmpJoin}${tmpWhere}${tmpOrderBy}${tmpLimit};`;
 	};
 
 	var Update = function(pParameters)
@@ -775,16 +776,18 @@ var FoxHoundDialectMySQL = function()
 
 	var Count = function(pParameters)
 	{
+		var tmpFieldList = generateFieldList(pParameters);
 		var tmpTableName = generateTableName(pParameters);
 		var tmpJoin = generateJoins(pParameters);
 		var tmpWhere = generateWhere(pParameters);
+		const tmpOptDistinct = pParameters.distinct ? 'DISTINCT' : '';
 
 		if (pParameters.queryOverride)
 		{
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:''});
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct});
 			}
 			catch (pError)
 			{
@@ -794,7 +797,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return 'SELECT COUNT(*) AS RowCount FROM'+tmpTableName+tmpJoin+tmpWhere+';';
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList}) AS RowCount FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({

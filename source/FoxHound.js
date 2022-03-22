@@ -194,6 +194,26 @@ var FoxHound = function()
 			return this;
 		};
 
+		/**
+		* Set whether the query returns DISTINCT results.
+		* For count queries, returns the distinct for the selected fields, or all fields in the base table by default.
+		*
+		* @method setDistinct
+		* @param {Boolean} pDistinct True if the query should be distinct.
+		* @return {Object} Returns the current Query for chaining.
+		*/
+		var setDistinct = function(pDistinct)
+		{
+			_Parameters.distinct = !!pDistinct;
+
+			if (_LogLevel > 2)
+			{
+				_Fable.log.info('Distinct set: '+_Parameters.distinct, {queryUUID:_UUID, parameters:_Parameters});
+			}
+
+			return this;
+		};
+
 
 		/**
 		* Set the Data Elements for the Query.  *Data Elements* are the fields
@@ -792,6 +812,7 @@ var FoxHound = function()
 			setLogLevel: setLogLevel,
 
 			setScope: setScope,
+			setDistinct: setDistinct,
 			setIDUser: setIDUser,
 			setDataElements: setDataElements,
 			setBegin: setBegin,
