@@ -27,3 +27,5 @@ package-lock.json
 
 # Users Environment Variables
 .lock-wscript
+
+.DS_Store
