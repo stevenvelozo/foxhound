@@ -44,14 +44,28 @@ var FoxHoundDialectMySQL = function()
 	 *
 	 * @method: generateFieldList
 	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the field list clause
+	 * @param {Boolean} pExplicitFields (optional) If true, generate explicit fields rather than "TableName.*" (for count distinct).
+	 * @return: {String} Returns the field list clause, or empty string if explicit fields are requested but cannot be fulfilled
+	 *          due to missing schema.
 	 */
-	var generateFieldList = function(pParameters)
+	var generateFieldList = function(pParameters, pExplicitFields)
 	{
 		var tmpDataElements = pParameters.dataElements;
 		if (!Array.isArray(tmpDataElements) || tmpDataElements.length < 1)
 		{
-			return generateTableName(pParameters) + '.*';
+			const tmpTableName = generateTableName(pParameters);
+			if (!pExplicitFields)
+			{
+				return tmpTableName + '.*';
+			}
+			// we need to list all of the table fields explicitly; get them from the schema
+			var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+			tmpDataElements = tmpSchema.map((entry) => `${tmpTableName}.${entry.Column}`.trim());
+			if (tmpDataElements.length < 1)
+			{
+				// this means we have no schema; returning an empty string here signals the calling code to handle this case
+				return '';
+			}
 		}
 
 		var tmpFieldList = ' ';
@@ -77,19 +91,26 @@ var FoxHoundDialectMySQL = function()
 		return tmpFieldList;
 	};
 
+	const SURROUNDING_QUOTES_AND_WHITESPACE_REGEX = /^[` ]+|[` ]+$/g;
+
+	const cleanseQuoting = (str) =>
+	{
+		return str.replace(SURROUNDING_QUOTES_AND_WHITESPACE_REGEX, '');
+	};
+
 	/**
 	 * Ensure a field name is properly escaped.
 	 */
 	var generateSafeFieldName = function(pFieldName)
 	{
-		pFieldNames = pFieldName.replace('`', '').split('.');
+		let pFieldNames = pFieldName.split('.');
 		if (pFieldNames.length > 1)
 		{
-			return "`" + pFieldNames[0] + "`.`" + pFieldNames[1] + "`";
+			return "`" + cleanseQuoting(pFieldNames[0]) + "`.`" + cleanseQuoting(pFieldNames[1]) + "`";
 		}
 		else
 		{
-			return "`" + pFieldNames[0] + "`";
+			return "`" + cleanseQuoting(pFieldNames[0]) + "`";
 		}
 	}
 
@@ -776,11 +797,16 @@ var FoxHoundDialectMySQL = function()
 
 	var Count = function(pParameters)
 	{
-		var tmpFieldList = generateFieldList(pParameters);
+		var tmpFieldList = pParameters.distinct ? generateFieldList(pParameters, true) : '*';
 		var tmpTableName = generateTableName(pParameters);
 		var tmpJoin = generateJoins(pParameters);
 		var tmpWhere = generateWhere(pParameters);
-		const tmpOptDistinct = pParameters.distinct ? 'DISTINCT' : '';
+		// here, we ignore the distinct keyword if no fields have bene specified and
+		if (pParameters.distinct && tmpFieldList.length < 1)
+		{
+			console.warn('Distinct requested but no field list or schema are available, so not honoring distinct for count query.');
+		}
+		const tmpOptDistinct = pParameters.distinct && tmpFieldList.length > 0 ? 'DISTINCT' : '';
 
 		if (pParameters.queryOverride)
 		{
@@ -797,7 +823,7 @@ var FoxHoundDialectMySQL = function()
 			}
 		}
 
-		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList}) AS RowCount FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS RowCount FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({
