@@ -2,7 +2,6 @@
 
 The FoxHound javascript query generator, for node.js and the browser.
 
-[![Build Status](https://travis-ci.org/stevenvelozo/foxhound.svg?branch=master)](https://travis-ci.org/stevenvelozo/foxhound)
 
 ### Getting Started
 
