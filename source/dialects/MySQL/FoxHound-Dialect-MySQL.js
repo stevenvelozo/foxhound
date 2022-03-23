@@ -44,28 +44,35 @@ var FoxHoundDialectMySQL = function()
 	 *
 	 * @method: generateFieldList
 	 * @param: {Object} pParameters SQL Query Parameters
-	 * @param {Boolean} pExplicitFields (optional) If true, generate explicit fields rather than "TableName.*" (for count distinct).
+	 * @param {Boolean} pIsForCountClause (optional) If true, generate fields for use within a count clause.
 	 * @return: {String} Returns the field list clause, or empty string if explicit fields are requested but cannot be fulfilled
 	 *          due to missing schema.
 	 */
-	var generateFieldList = function(pParameters, pExplicitFields)
+	var generateFieldList = function(pParameters, pIsForCountClause)
 	{
 		var tmpDataElements = pParameters.dataElements;
 		if (!Array.isArray(tmpDataElements) || tmpDataElements.length < 1)
 		{
 			const tmpTableName = generateTableName(pParameters);
-			if (!pExplicitFields)
+			if (!pIsForCountClause)
 			{
 				return tmpTableName + '.*';
 			}
 			// we need to list all of the table fields explicitly; get them from the schema
-			var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
-			tmpDataElements = tmpSchema.map((entry) => `${tmpTableName}.${entry.Column}`.trim());
-			if (tmpDataElements.length < 1)
+			const tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+			if (tmpSchema.length < 1)
 			{
 				// this means we have no schema; returning an empty string here signals the calling code to handle this case
 				return '';
 			}
+			const idColumn = tmpSchema.find((entry) => entry.Type === 'AutoIdentity');
+			if (!idColumn)
+			{
+				// this means there is no autoincrementing unique ID column; treat as above
+				return '';
+			}
+			const qualifiedIDColumn = `${tmpTableName}.${idColumn.Column}`;
+			return ` ${generateSafeFieldName(qualifiedIDColumn)}`;
 		}
 
 		var tmpFieldList = ' ';
@@ -801,7 +808,7 @@ var FoxHoundDialectMySQL = function()
 		var tmpTableName = generateTableName(pParameters);
 		var tmpJoin = generateJoins(pParameters);
 		var tmpWhere = generateWhere(pParameters);
-		// here, we ignore the distinct keyword if no fields have bene specified and
+		// here, we ignore the distinct keyword if no fields have been specified and
 		if (pParameters.distinct && tmpFieldList.length < 1)
 		{
 			console.warn('Distinct requested but no field list or schema are available, so not honoring distinct for count query.');
