@@ -31,3 +31,16 @@ Which now will output:
 
     $ npm test
     $ npm run coverage
+
+### Docker Development Environment
+
+
+1. Run this command to build this image:
+```
+docker build ./ -t retold/foxhound:local
+```
+
+2. Run this command to build the local container:
+```
+docker run -it --name foxhound-dev -p 127.0.0.1:12346:8080 -v "$PWD/.config:/home/coder/.config"  -v "$PWD:/home/coder/foxhound" -u "$(id -u):$(id -g)" -e "DOCKER_USER=$USER" retold/foxhound:local
+```
