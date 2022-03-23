@@ -67,14 +67,33 @@ var FoxHoundDialectALASQL = function()
 	 *
 	 * @method: generateFieldList
 	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the field list clause
+	 * @param {Boolean} pIsForCountClause (optional) If true, generate fields for use within a count clause.
+	 * @return: {String} Returns the field list clause, or empty string if explicit fields are requested but cannot be fulfilled
+	 *          due to missing schema.
 	 */
-	var generateFieldList = function(pParameters)
+	var generateFieldList = function(pParameters, pIsForCountClause)
 	{
 		var tmpDataElements = pParameters.dataElements;
 		if (!Array.isArray(tmpDataElements) || tmpDataElements.length < 1)
 		{
-			return ' *';
+			if (!pIsForCountClause)
+			{
+				return ' *';
+			}
+			// we need to list all of the table fields explicitly; get them from the schema
+			const tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+			if (tmpSchema.length < 1)
+			{
+				// this means we have no schema; returning an empty string here signals the calling code to handle this case
+				return '';
+			}
+			const idColumn = tmpSchema.find((entry) => entry.Type === 'AutoIdentity');
+			if (!idColumn)
+			{
+				// this means there is no autoincrementing unique ID column; treat as above
+				return '';
+			}
+			return ` ${idColumn.Column}`;
 		}
 
 		var tmpFieldList = ' ';
@@ -740,9 +759,14 @@ var FoxHoundDialectALASQL = function()
 	{
 		var tmpTableName = generateTableName(pParameters);
 		var tmpWhere = generateWhere(pParameters);
-		const tmpOptDistinct = pParameters.distinct ? 'DISTINCT' : '';
-		const tmpCountClause = pParameters.distinct ? `${tmpOptDistinct}${generateFieldList(pParameters)}` : '*';
+		const tmpFieldList = pParameters.distinct ? generateFieldList(pParameters, true) : '*';
 
+		// here, we ignore the distinct keyword if no fields have been specified and
+		if (pParameters.distinct && tmpFieldList.length < 1)
+		{
+			console.warn('Distinct requested but no field list or schema are available, so not honoring distinct for count query.');
+		}
+		const tmpOptDistinct = pParameters.distinct && tmpFieldList.length > 0 ? 'DISTINCT' : '';
 		if (pParameters.queryOverride)
 		{
 			try
@@ -758,7 +782,7 @@ var FoxHoundDialectALASQL = function()
 			}
 		}
 
-		return `SELECT COUNT(${tmpCountClause}) AS RowCount FROM${tmpTableName}${tmpWhere};`;
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS RowCount FROM${tmpTableName}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({
