@@ -44,3 +44,9 @@ docker build ./ -t retold/foxhound:local
 ```
 docker run -it --name foxhound-dev -p 127.0.0.1:12346:8080 -v "$PWD/.config:/home/coder/.config"  -v "$PWD:/home/coder/foxhound" -u "$(id -u):$(id -g)" -e "DOCKER_USER=$USER" retold/foxhound:local
 ```
+
+3. Go to http://localhost:12346/ in a web browser
+
+4. The password is "retold"
+
+5. Right now you (may) need to delete the `node_modules` folders and regenerate it for Linux.
