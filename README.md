@@ -40,9 +40,22 @@ Which now will output:
 docker build ./ -t retold/foxhound:local
 ```
 
+alternatively you can use npm to run this
+
+
+```
+npm run docker-dev-build-image
+```
+
 2. Run this command to build the local container:
 ```
 docker run -it --name foxhound-dev -p 127.0.0.1:12346:8080 -v "$PWD/.config:/home/coder/.config"  -v "$PWD:/home/coder/foxhound" -u "$(id -u):$(id -g)" -e "DOCKER_USER=$USER" retold/foxhound:local
+```
+
+alternatively you can use npm to run this
+
+```
+npm run docker-dev-run
 ```
 
 3. Go to http://localhost:12346/ in a web browser

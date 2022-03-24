@@ -17,7 +17,6 @@ RUN echo "...mapping library specific volumes..."
 VOLUME /home/coder/foxhound
 # VOLUME /home/coder/foxhound/node_modules
 
-
 SHELL ["/bin/bash", "-c"]
 USER coder
 
@@ -29,10 +28,5 @@ RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | ba
 RUN echo "...installing node version 14 as the default..."
 RUN . ~/.nvm/nvm.sh && source ~/.bashrc && nvm install 14
 RUN . ~/.nvm/nvm.sh && source ~/.bashrc && nvm alias default 14
-
-# Now setup vscode to use this version of node
-# We need a better way of managing this, maybe.
-RUN mkdir -p /home/coder/.vscode
-COPY ./.config/.image_vscode/templated_launch.json /home/coder/.vscode/launch.json
 
 WORKDIR /home/coder/foxhound

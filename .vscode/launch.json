@@ -5,14 +5,42 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Debug Harness",
             "type": "pwa-node",
             "request": "launch",
-            "name": "Launch Program",
             "outputCapture": "std",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/debug/Harness.js"
+            "program": "${workspaceFolder}/debug/Harness.js",
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            }
+        },
+        {
+            "name": "Mocha Tests",
+            "args": [
+                "-u",
+                "tdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "${workspaceFolder}/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "pwa-node",
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 2
+            }
         }
     ]
 }
