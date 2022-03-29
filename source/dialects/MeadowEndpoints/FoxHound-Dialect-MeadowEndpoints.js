@@ -404,7 +404,6 @@ var FoxHoundDialectMeadowEndpoints = function()
 		}
 
 		return tmpURL;
-        ///'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpJoin+tmpWhere+tmpOrderBy+tmpLimit+';';
 	};
 
 	var Update = function(pParameters)
@@ -449,7 +448,7 @@ var FoxHoundDialectMeadowEndpoints = function()
 
         if (tmpWhere)
         {
-            return `${tmpCountQuery}s/Count/FilteredTo/${tmpWhere}`;
+            return `${tmpTableName}s/Count/FilteredTo/${tmpWhere}`;
         }
 
         return tmpCountQuery;
