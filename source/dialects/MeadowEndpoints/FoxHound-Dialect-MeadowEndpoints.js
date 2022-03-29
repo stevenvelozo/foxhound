@@ -23,6 +23,19 @@ var FoxHoundDialectMeadowEndpoints = function()
 	};
 
 	/**
+	 * Generate the Identity column from the schema or scope
+	 * 
+	 * @method: generateIdentityColumnName
+	 * @param: {Object} pParameters SQL Query Parameters
+	 * @return: {String} Returns the table name clause
+	 */
+	var generateIdentityColumnName = function(pParameters)
+	{
+		// TODO: See about using the Schema or the Schemata for this
+		return `ID${pParameters.scope}`;
+	};
+
+	/**
 	 * Generate a field list from the array of dataElements
 	 *
 	 * Each entry in the dataElements is a simple string
@@ -353,19 +366,42 @@ var FoxHoundDialectMeadowEndpoints = function()
 		var tmpWhere = generateWhere(pParameters);
 		var tmpLimit = generateLimit(pParameters);
 
-        var tmpURL = `${tmpTableName}s`;
-        if (tmpFieldList)
-        {
-            tmpURL = `${tmpURL}/LiteExtended/${tmpFieldList}`
-        }
-        if (tmpWhere)
-        {
-            tmpURL = `${tmpURL}/FilteredTo/${tmpWhere}`;
-        }
-        if (tmpLimit)
-        {
-            tmpURL = `${tmpURL}/${tmpLimit}`;
-        }
+		var tmpURL = `${tmpTableName}`;
+		// In the case that there is only a single query parameter, and the parameter is a single identity, 
+		// we will cast it to the READ endpoint rather than READS.
+		if ((pParameters.filter)
+			 && (pParameters.filter.length == 1)
+             // If there is exactly one query filter parameter
+			 && (pParameters.filter[0].Column === generateIdentityColumnName(pParameters))
+			 // AND It is the Identity column
+			 && (pParameters.filter[0].Operator === '=')
+			 // AND The comparators is a simple equals 
+			 && (tmpLimit == '') && (tmpFieldList == '')
+			 // AND There is no limit or field list set
+			 && (!pParameters.sort))
+			 // AND There is no sort clause
+		{
+			// THEN This is a SINGLE READ by presumption.
+			// There are some bad side affects this could cause with chaining and overridden behaviors, if 
+			// we are requesting a filtered list of 1 record.
+			tmpURL = `${tmpURL}/${pParameters.filter[0].Value}`;
+		}
+		else
+		{
+			tmpURL = `${tmpURL}s`;
+			if (tmpFieldList)
+			{
+				tmpURL = `${tmpURL}/LiteExtended/${tmpFieldList}`
+			}
+			if (tmpWhere)
+			{
+				tmpURL = `${tmpURL}/FilteredTo/${tmpWhere}`;
+			}
+			if (tmpLimit)
+			{
+				tmpURL = `${tmpURL}/${tmpLimit}`;
+			}
+		}
 
 		return tmpURL;
         ///'SELECT'+tmpFieldList+' FROM'+tmpTableName+tmpJoin+tmpWhere+tmpOrderBy+tmpLimit+';';
