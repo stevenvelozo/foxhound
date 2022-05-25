@@ -476,11 +476,6 @@ var FoxHoundDialectALASQL = function()
 	*/
 	var generateUpdateUndeleteSetters = function(pParameters)
 	{
-		if (pParameters.query.disableDeleteTracking)
-		{
-			//Don't generate an UPDATE query if Delete tracking is disabled
-			return false;
-		}
 		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
 		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
 
@@ -832,8 +827,11 @@ var FoxHoundDialectALASQL = function()
 	var Undelete = function(pParameters)
 	{
 		var tmpTableName = generateTableName(pParameters);
+		let tmpDeleteTrackingState = pParameters.query.disableDeleteTracking;
+		pParameters.query.disableDeleteTracking = false;
 		var tmpWhere = generateWhere(pParameters);
 		var tmpUpdateUndeleteSetters = generateUpdateUndeleteSetters(pParameters);
+		pParameters.query.disableDeleteTracking = tmpDeleteTrackingState;
 
 		if (tmpUpdateUndeleteSetters)
 		{
