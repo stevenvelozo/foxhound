@@ -54,6 +54,13 @@ var FoxHoundDialectEnglish = function()
 		return 'I am deleting your '+tmpScope+'.';
 	};
 
+	var Undelete = function(pParameters)
+	{
+		var tmpScope = pParameters.scope;
+
+		return 'I am undeleting your '+tmpScope+'.';
+	};
+
 	var Count = function(pParameters)
 	{
 		var tmpScope = pParameters.scope;
@@ -67,6 +74,7 @@ var FoxHoundDialectEnglish = function()
 		Read: Read,
 		Update: Update,
 		Delete: Delete,
+		Undelete: Undelete,
 		Count: Count
 	});
 

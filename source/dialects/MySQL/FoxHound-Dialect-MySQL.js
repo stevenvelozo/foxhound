@@ -23,12 +23,12 @@ var FoxHoundDialectMySQL = function()
 	const SQL_NOW = "NOW(3)";
 
 	/**
-	 * Generate a table name from the scope
-	 *
-	 * @method: generateTableName
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate a table name from the scope
+	*
+	* @method: generateTableName
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateTableName = function(pParameters)
 	{
 		if (pParameters.scope && pParameters.scope.indexOf('`') >= 0)
@@ -38,16 +38,16 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate a field list from the array of dataElements
-	 *
-	 * Each entry in the dataElements is a simple string
-	 *
-	 * @method: generateFieldList
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @param {Boolean} pIsForCountClause (optional) If true, generate fields for use within a count clause.
-	 * @return: {String} Returns the field list clause, or empty string if explicit fields are requested but cannot be fulfilled
-	 *          due to missing schema.
-	 */
+	* Generate a field list from the array of dataElements
+	*
+	* Each entry in the dataElements is a simple string
+	*
+	* @method: generateFieldList
+	* @param: {Object} pParameters SQL Query Parameters
+	* @param {Boolean} pIsForCountClause (optional) If true, generate fields for use within a count clause.
+	* @return: {String} Returns the field list clause, or empty string if explicit fields are requested but cannot be fulfilled
+	*          due to missing schema.
+	*/
 	var generateFieldList = function(pParameters, pIsForCountClause)
 	{
 		var tmpDataElements = pParameters.dataElements;
@@ -106,8 +106,8 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Ensure a field name is properly escaped.
-	 */
+	* Ensure a field name is properly escaped.
+	*/
 	var generateSafeFieldName = function(pFieldName)
 	{
 		let pFieldNames = pFieldName.split('.');
@@ -122,9 +122,9 @@ var FoxHoundDialectMySQL = function()
 	}
 
 	/**
-	 * Generate a query from the array of where clauses
-	 *
-	 * Each clause is an object like:
+	* Generate a query from the array of where clauses
+	*
+	* Each clause is an object like:
 		{
 			Column:'Name',
 			Operator:'EQ',
@@ -132,11 +132,11 @@ var FoxHoundDialectMySQL = function()
 			Connector:'And',
 			Parameter:'Name'
 		}
-	 *
-	 * @method: generateWhere
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the WHERE clause prefixed with WHERE, or an empty string if unnecessary
-	 */
+	*
+	* @method: generateWhere
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the WHERE clause prefixed with WHERE, or an empty string if unnecessary
+	*/
 	var generateWhere = function(pParameters)
 	{
 		var tmpFilter = Array.isArray(pParameters.filter) ? pParameters.filter : [];
@@ -247,15 +247,15 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate an ORDER BY clause from the sort array
-	 *
-	 * Each entry in the sort is an object like:
-	 * {Column:'Color',Direction:'Descending'}
-	 *
-	 * @method: generateOrderBy
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the field list clause
-	 */
+	* Generate an ORDER BY clause from the sort array
+	*
+	* Each entry in the sort is an object like:
+	* {Column:'Color',Direction:'Descending'}
+	*
+	* @method: generateOrderBy
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the field list clause
+	*/
 	var generateOrderBy = function(pParameters)
 	{
 		var tmpOrderBy = pParameters.sort;
@@ -282,12 +282,12 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate the limit clause
-	 *
-	 * @method: generateLimit
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate the limit clause
+	*
+	* @method: generateLimit
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateLimit = function(pParameters)
 	{
 		if (!pParameters.cap)
@@ -308,12 +308,12 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate the join clause
-	 *
-	 * @method: generateJoins
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the join clause
-	 */
+	* Generate the join clause
+	*
+	* @method: generateJoins
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the join clause
+	*/
 	var generateJoins = function(pParameters)
 	{
 		var tmpJoins = pParameters.join;
@@ -337,12 +337,12 @@ var FoxHoundDialectMySQL = function()
 	}
 
 	/**
-	 * Generate the update SET clause
-	 *
-	 * @method: generateUpdateSetters
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate the update SET clause
+	*
+	* @method: generateUpdateSetters
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateUpdateSetters = function(pParameters)
 	{
 		var tmpRecords = pParameters.query.records;
@@ -437,14 +437,92 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate the update-delete SET clause
-	 *
-	 * @method: generateUpdateDeleteSetters
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate the update-delete SET clause
+	*
+	* @method: generateUpdateDeleteSetters
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateUpdateDeleteSetters = function(pParameters)
 	{
+		if (pParameters.query.disableDeleteTracking)
+		{
+			//Don't generate an UPDATE query if Delete tracking is disabled
+			return false;
+		}
+		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
+		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+ 
+		var tmpCurrentColumn = 0;
+		var tmpHasDeletedField = false;
+		var tmpUpdate = '';
+		// No hash table yet, so, we will just linear search it for now.
+		// This uses the schema to decide if we want to treat a column differently on insert
+		var tmpSchemaEntry = {Type:'Default'};
+		for (var i = 0; i < tmpSchema.length; i++)
+		{
+			// There is a schema entry for it.  Process it accordingly.
+			tmpSchemaEntry = tmpSchema[i];
+ 
+			var tmpUpdateSql = null;
+ 
+			switch (tmpSchemaEntry.Type)
+			{
+				case 'Deleted':
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpHasDeletedField = true; //this field is required in order for query to be built
+					break;
+				case 'DeleteDate':
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
+					break;
+				case 'UpdateDate':
+					// Delete operation is an Update, so we should stamp the update time
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
+					break;
+				case 'DeleteIDUser':
+					// This is the user ID, which we hope is in the query.
+					// This is how to deal with a normal column
+					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					// Set the query parameter
+					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					break;
+				default:
+					//DON'T allow update of other fields in this query
+					continue;
+			}
+ 
+			if (tmpCurrentColumn > 0)
+			{
+				tmpUpdate += ',';
+			}
+ 
+			tmpUpdate += tmpUpdateSql;
+ 
+			// We use a number to make sure parameters are unique.
+			tmpCurrentColumn++;
+		}
+ 
+		// We need to tell the query not to generate improperly if there are no values set.
+		if (!tmpHasDeletedField ||
+			tmpUpdate === '')
+		{
+			return false;
+		}
+ 
+		return tmpUpdate;
+	};
+ 
+	/**
+	* Generate the update-undelete SET clause
+	*
+	* @method: generateUpdateUndeleteSetters
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
+	var generateUpdateUndeleteSetters = function(pParameters)
+	{
+		// TODO: Eliminate this disableDeleteTracking stuff that was added
 		if (pParameters.query.disableDeleteTracking)
 		{
 			//Don't generate an UPDATE query if Delete tracking is disabled
@@ -469,22 +547,16 @@ var FoxHoundDialectMySQL = function()
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 0';
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
-				case 'DeleteDate':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
-					break;
 				case 'UpdateDate':
-					// Delete operation is an Update, so we should stamp the update time
+					// The undelete operation is an Update, so we should stamp the update time
 					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
 					break;
-				case 'DeleteIDUser':
-					// This is the user ID, which we hope is in the query.
-					// This is how to deal with a normal column
+				case 'UpdateIDUser':
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
 					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
-					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					break;
 				default:
@@ -514,12 +586,12 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate the create SET clause
-	 *
-	 * @method: generateCreateSetList
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate the create SET clause
+	*
+	* @method: generateCreateSetList
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateCreateSetValues = function(pParameters)
 	{
 		var tmpRecords = pParameters.query.records;
@@ -659,12 +731,12 @@ var FoxHoundDialectMySQL = function()
 	};
 
 	/**
-	 * Generate the create SET clause
-	 *
-	 * @method: generateCreateSetList
-	 * @param: {Object} pParameters SQL Query Parameters
-	 * @return: {String} Returns the table name clause
-	 */
+	* Generate the create SET clause
+	*
+	* @method: generateCreateSetList
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table name clause
+	*/
 	var generateCreateSetList = function(pParameters)
 	{
 		// The records were already validated by generateCreateSetValues
@@ -802,6 +874,25 @@ var FoxHoundDialectMySQL = function()
 		}
 	};
 
+	var Undelete = function(pParameters)
+	{
+		var tmpTableName = generateTableName(pParameters);
+		var tmpWhere = generateWhere(pParameters);
+		var tmpUpdateUndeleteSetters = generateUpdateUndeleteSetters(pParameters);
+
+		if (tmpUpdateUndeleteSetters)
+		{
+			//If the table has a deleted bit, go forward with the update to change things.
+			return 'UPDATE'+tmpTableName+' SET'+tmpUpdateUndeleteSetters+tmpWhere+';';
+		}
+		else
+		{
+			// This is a no-op because the record can't be undeleted.
+			// TODO: Should it throw instead?
+			return 'SELECT NULL;';
+		}
+	};
+
 	var Count = function(pParameters)
 	{
 		var tmpFieldList = pParameters.distinct ? generateFieldList(pParameters, true) : '*';
@@ -838,15 +929,16 @@ var FoxHoundDialectMySQL = function()
 		Read: Read,
 		Update: Update,
 		Delete: Delete,
+		Undelete: Undelete,
 		Count: Count
 	});
 
 	/**
-	 * Dialect Name
-	 *
-	 * @property name
-	 * @type string
-	 */
+	* Dialect Name
+	*
+	* @property name
+	* @type string
+	*/
 	Object.defineProperty(tmpDialect, 'name',
 		{
 			get: function() { return 'MySQL'; },

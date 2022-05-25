@@ -794,6 +794,13 @@ var FoxHound = function()
 			return this;
 		};
 
+		var buildUndeleteQuery = function()
+		{
+			checkDialect();
+			_Parameters.query.body = _Dialect.Undelete(_Parameters);
+			return this;
+		};
+
 		var buildCountQuery = function()
 		{
 			checkDialect();
@@ -836,6 +843,7 @@ var FoxHound = function()
 			buildReadQuery: buildReadQuery,
 			buildUpdateQuery: buildUpdateQuery,
 			buildDeleteQuery: buildDeleteQuery,
+			buildUndeleteQuery: buildUndeleteQuery,
 			buildCountQuery: buildCountQuery,
 
 			clone: clone,
