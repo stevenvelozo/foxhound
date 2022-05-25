@@ -873,7 +873,7 @@ var FoxHoundDialectMySQL = function()
 		var tmpTableName = generateTableName(pParameters);
 		// TODO: Fix these
 		let tmpDeleteTrackingState = pParameters.query.disableDeleteTracking;
-		pParameters.query.disableDeleteTracking = false;
+		pParameters.query.disableDeleteTracking = true;
 		var tmpWhere = generateWhere(pParameters);
 		var tmpUpdateUndeleteSetters = generateUpdateUndeleteSetters(pParameters);
 		pParameters.query.disableDeleteTracking = tmpDeleteTrackingState;
