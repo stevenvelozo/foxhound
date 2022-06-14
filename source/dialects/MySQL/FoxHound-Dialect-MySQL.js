@@ -452,7 +452,7 @@ var FoxHoundDialectMySQL = function()
 		}
 		// Check if there is a schema.  If so, we will use it to decide if these are parameterized or not.
 		var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
- 
+
 		var tmpCurrentColumn = 0;
 		var tmpHasDeletedField = false;
 		var tmpUpdate = '';
@@ -463,9 +463,9 @@ var FoxHoundDialectMySQL = function()
 		{
 			// There is a schema entry for it.  Process it accordingly.
 			tmpSchemaEntry = tmpSchema[i];
- 
+
 			var tmpUpdateSql = null;
- 
+
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
@@ -491,28 +491,28 @@ var FoxHoundDialectMySQL = function()
 					//DON'T allow update of other fields in this query
 					continue;
 			}
- 
+
 			if (tmpCurrentColumn > 0)
 			{
 				tmpUpdate += ',';
 			}
- 
+
 			tmpUpdate += tmpUpdateSql;
- 
+
 			// We use a number to make sure parameters are unique.
 			tmpCurrentColumn++;
 		}
- 
+
 		// We need to tell the query not to generate improperly if there are no values set.
 		if (!tmpHasDeletedField ||
 			tmpUpdate === '')
 		{
 			return false;
 		}
- 
+
 		return tmpUpdate;
 	};
- 
+
 	/**
 	* Generate the update-undelete SET clause
 	*
@@ -824,7 +824,7 @@ var FoxHoundDialectMySQL = function()
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{
@@ -909,7 +909,7 @@ var FoxHoundDialectMySQL = function()
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct});
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{

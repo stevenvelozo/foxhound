@@ -780,7 +780,7 @@ var FoxHoundDialectALASQL = function()
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{
@@ -861,7 +861,7 @@ var FoxHoundDialectALASQL = function()
 			try
 			{
 				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct});
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{
