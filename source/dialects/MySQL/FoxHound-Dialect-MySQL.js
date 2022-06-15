@@ -113,12 +113,21 @@ var FoxHoundDialectMySQL = function()
 		let pFieldNames = pFieldName.split('.');
 		if (pFieldNames.length > 1)
 		{
-			return "`" + cleanseQuoting(pFieldNames[0]) + "`.`" + cleanseQuoting(pFieldNames[1]) + "`";
+			const cleansedFieldName = cleanseQuoting(pFieldNames[1]);
+			if (cleansedFieldName === '*')
+			{
+				// do not put * as `*`
+				return "`" + cleanseQuoting(pFieldNames[0]) + "`.*";
+			}
+			return "`" + cleanseQuoting(pFieldNames[0]) + "`.`" + cleansedFieldName + "`";
 		}
-		else
+		const cleansedFieldName = cleanseQuoting(pFieldNames[0]);
+		if (cleansedFieldName === '*')
 		{
-			return "`" + cleanseQuoting(pFieldNames[0]) + "`";
+			// do not put * as `*`
+			return '*';
 		}
+		return "`" + cleanseQuoting(pFieldNames[0]) + "`";
 	}
 
 	/**
