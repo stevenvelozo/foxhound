@@ -10,7 +10,7 @@ var Chai = require('chai');
 var Expect = Chai.expect;
 var Assert = Chai.assert;
 
-var libFable = require('fable').new({});
+var libFable = new (require('fable'))({Product:'FoxhoundTests'});
 var libFoxHound = require('../source/FoxHound.js');
 
 var _AnimalSchema = (

@@ -1,13 +1,14 @@
 {
   "name": "foxhound",
-  "version": "1.0.42",
+  "version": "2.0.0",
   "description": "A Database Query generation library.",
   "main": "source/FoxHound.js",
   "scripts": {
     "start": "node source/FoxHound.js",
-    "coverage": "./node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
+    "coverage": "./node_modules/.bin/nyc --reporter=lcov --reporter=text-lcov ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
     "test": "./node_modules/.bin/mocha -u tdd -R spec",
-    "docker-dev-build-image": "docker build ./ -t retold/foxhound:local",
+    "build": "./node_modules/.bin/gulp build",
+    "docker-dev-build-image": "docker build ./ -f Dockerfile_LUXURYCode -t retold/foxhound:local",
     "docker-dev-run": "docker run -it -d --name foxhound-dev -p 127.0.0.1:12346:8080 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/foxhound\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" retold/foxhound:local"
   },
   "mocha": {
@@ -44,12 +45,20 @@
   },
   "homepage": "https://github.com/stevenvelozo/foxhound",
   "devDependencies": {
-    "chai": "4.3.6",
-    "istanbul": "0.4.1",
-    "mocha": "9.2.2"
+    "browserify": "^17.0.0",
+    "chai": "4.3.7",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-terser": "^2.1.0",
+    "gulp-util": "^3.0.8",
+    "mocha": "10.2.0",
+    "nyc": "^15.1.0",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "fable": "~2.0.5",
-    "underscore": "1.13.2"
+    "fable": "^3.0.2",
+    "underscore": "1.13.6"
   }
 }
