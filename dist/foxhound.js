@@ -172,7 +172,8 @@
               // True once we've run a query.
               value: false,
               // The return value of the last query run
-              error: false // The error message of the last run query
+              // Updated below due to changes in how Async.js responds to a false value here
+              error: undefined // The error message of the last run query
             };
 
             return this;
