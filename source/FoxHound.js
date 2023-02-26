@@ -1,24 +1,12 @@
 /**
 * FoxHound Query Generation Library
-*
 * @license MIT
-*
 * @author Steven Velozo <steven@velozo.com>
-* @module FoxHound
 */
-
-// We use Underscore.js for utility
-var libUnderscore = require('underscore');
 
 // Load our base parameters skeleton object
-var baseParameters = require('./Parameters.js');
+const baseParameters = require('./Parameters.js');
 
-/**
-* FoxHound Query Generation Library Main Class
-*
-* @class FoxHound
-* @constructor
-*/
 var FoxHound = function()
 {
 	function createNew(pFable, pFromParameters)
@@ -38,6 +26,8 @@ var FoxHound = function()
 		// The parameters config object for the current query.  This is the only
 		// piece of internal state that is important to operation.
 		var _Parameters = false;
+
+		var _Dialects = require('./Foxhound-Dialects.js');
 
 		// The unique identifier for a query
 		var _UUID = _Fable.getUUID();
@@ -93,7 +83,7 @@ var FoxHound = function()
 		*/
 		var resetParameters = function()
 		{
-			_Parameters = libUnderscore.extend({}, baseParameters, _DefaultParameters);
+			_Parameters = _Fable.Utility.extend({}, baseParameters, _DefaultParameters);
 			_Parameters.query = ({
 				disableAutoIdentity: false,
 				disableAutoDateStamp: false,
@@ -127,7 +117,7 @@ var FoxHound = function()
 		*/
 		var mergeParameters = function(pFromParameters)
 		{
-			_Parameters = libUnderscore.extend({}, _Parameters, pFromParameters);
+			_Parameters = _Fable.Utility.extend({}, _Parameters, pFromParameters);
 			return this;
 		};
 
@@ -644,26 +634,24 @@ var FoxHound = function()
 		*/
 		var setDialect = function(pDialectName)
 		{
+
 			if (typeof(pDialectName) !== 'string')
 			{
 				_Fable.log.warn('Dialect set to English - invalid name', {queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName});
 				return setDialect('English');
 			}
 
-			var tmpDialectModuleFile = './dialects/'+pDialectName+'/FoxHound-Dialect-'+pDialectName+'.js';
-
-			try
+			if (_Dialects.hasOwnProperty(pDialectName))
 			{
-				var tmpDialectModule = require(tmpDialectModuleFile);
-				_Dialect = tmpDialectModule;
+				_Dialect = _Dialects[pDialectName](_Fable);
 				if (_LogLevel > 2)
 				{
-					_Fable.log.info('Dialog set to: '+pDialectName, {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile});
+					_Fable.log.info('Dialog set to: '+pDialectName, {queryUUID:_UUID, parameters:_Parameters});
 				}
 			}
-			catch (pError)
+			else
 			{
-				_Fable.log.error('Dialect not set - require load problem', {queryUUID:_UUID, parameters:_Parameters, dialectModuleFile:tmpDialectModuleFile, invalidDialect:pDialectName, error:pError});
+				_Fable.log.error('Dialect not set - unknown dialect "'+pDialectName+"'", {queryUUID:_UUID, parameters:_Parameters, invalidDialect:pDialectName});
 				setDialect('English');
 			}
 
@@ -931,4 +919,4 @@ var FoxHound = function()
 	return createNew();
 };
 
-module.exports = new FoxHound();
+module.exports = FoxHound();

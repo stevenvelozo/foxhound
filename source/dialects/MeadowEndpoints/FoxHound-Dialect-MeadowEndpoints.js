@@ -6,7 +6,6 @@
 * @author Steven Velozo <steven@velozo.com>
 * @class FoxHoundDialectMeadowEndpoints
 */
-var libUnderscore = require('underscore');
 
 var FoxHoundDialectMeadowEndpoints = function()
 {
@@ -477,4 +476,4 @@ var FoxHoundDialectMeadowEndpoints = function()
 	return tmpDialect;
 };
 
-module.exports = new FoxHoundDialectMeadowEndpoints();
+module.exports = FoxHoundDialectMeadowEndpoints;

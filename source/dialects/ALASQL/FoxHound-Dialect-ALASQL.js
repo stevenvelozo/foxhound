@@ -15,10 +15,14 @@
 * @author Steven Velozo <steven@velozo.com>
 * @class FoxHoundDialectALASQL
 */
-var libUnderscore = require('underscore');
 
-var FoxHoundDialectALASQL = function()
+var FoxHoundDialectALASQL = function(pFable)
 {
+	//Request time from SQL server with microseconds resolution
+	const SQL_NOW = "NOW(3)";
+
+	_Fable = pFable;
+
 	/**
 	* Generate a table name from the scope.
 	*
@@ -779,7 +783,7 @@ var FoxHoundDialectALASQL = function()
 		{
 			try
 			{
-				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
+				var tmpQueryTemplate = _Fable.Utility.template(pParameters.queryOverride);
 				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
@@ -860,7 +864,7 @@ var FoxHoundDialectALASQL = function()
 		{
 			try
 			{
-				var tmpQueryTemplate = libUnderscore.template(pParameters.queryOverride);
+				var tmpQueryTemplate = _Fable.Utility.template(pParameters.queryOverride);
 				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
@@ -898,4 +902,4 @@ var FoxHoundDialectALASQL = function()
 	return tmpDialect;
 };
 
-module.exports = new FoxHoundDialectALASQL();
+module.exports = FoxHoundDialectALASQL;

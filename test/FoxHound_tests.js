@@ -10,7 +10,8 @@ var Chai = require('chai');
 var Expect = Chai.expect;
 var Assert = Chai.assert;
 
-var libFable = new (require('fable'))({Product:'FoxhoundTests'});
+var libFable = require('fable');
+const _Fable = new libFable({Product:'FoxhoundTests'});
 var libFoxHound = require('../source/FoxHound.js');
 
 suite
@@ -35,7 +36,7 @@ suite
 					'initialize should build a happy little object',
 					function()
 					{
-						var testFoxHound = libFoxHound.new(libFable);
+						var testFoxHound = libFoxHound.new(_Fable);
 						Expect(testFoxHound)
 							.to.be.an('object', 'FoxHound should initialize as an object directly from the require statement.');
 						Expect(testFoxHound).to.have.a.property('uuid')
@@ -48,7 +49,7 @@ suite
 					'basic class parameters',
 					function()
 					{
-						var testFoxHound = libFoxHound.new(libFable);
+						var testFoxHound = libFoxHound.new(_Fable);
 						Expect(testFoxHound).to.have.a.property('parameters')
 							.that.is.a('object');
 						Expect(testFoxHound.parameters).to.have.a.property('scope')
@@ -79,7 +80,7 @@ suite
 					function()
 					{
 						// The default dialect is English.  This one-liner is all-in.
-						Expect(libFoxHound.new(libFable).setLogLevel().setScope('Widget').buildReadQuery().query.body)
+						Expect(libFoxHound.new(_Fable).setLogLevel().setScope('Widget').buildReadQuery().query.body)
 							.to.equal('Please give me all your Widget records.  Thanks.');
 					}
 				);
@@ -88,7 +89,7 @@ suite
 					'change the dialect',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable).setLogLevel(5);
+						var tmpQuery = libFoxHound.new(_Fable).setLogLevel(5);
 
 						// Give a scope for the data to come from
 						tmpQuery.setScope('Widget');
@@ -141,7 +142,7 @@ suite
 					'change the scope by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.scope)
 							.to.equal(false);
@@ -157,7 +158,7 @@ suite
 					'merge parameters',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.scope)
 							.to.equal(false);
@@ -174,7 +175,7 @@ suite
 					function()
 					{
 						// Create a query
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 						Expect(tmpQuery.parameters.scope).to.equal(false);
 
 						// Clone it
@@ -202,7 +203,7 @@ suite
 					'fail to change the scope by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.scope)
 							.to.equal(false);
@@ -219,7 +220,7 @@ suite
 					'change the cap by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.cap)
 							.to.equal(false);
@@ -235,7 +236,7 @@ suite
 					'fail to change the cap by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.cap)
 							.to.equal(false);
@@ -251,7 +252,7 @@ suite
 					'change the user ID',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.userID)
 							.to.equal(0);
@@ -269,7 +270,7 @@ suite
 					'fail to change the user ID',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.userID)
 							.to.equal(0);
@@ -286,7 +287,7 @@ suite
 					'change the begin by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.begin)
 							.to.equal(false);
@@ -302,7 +303,7 @@ suite
 					'fail to change the begin by function',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						Expect(tmpQuery.parameters.begin)
 							.to.equal(false);
@@ -318,7 +319,7 @@ suite
 					'Manually set the parameters object',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						tmpQuery.parameters = {Frogs:'YES'};
 
@@ -331,7 +332,7 @@ suite
 					'Manually set the query object',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						tmpQuery.query = {body:'GET TO ALL DE CHOPPA RECORDS'};
 
@@ -344,7 +345,7 @@ suite
 					'Manually set the result object',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 
 						tmpQuery.result = {executed:true, value:[{Name:'Wendy'},{Name:'Griffin'}]};
 
@@ -357,7 +358,7 @@ suite
 					'Set a bad dialect',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable).setDialect('Esperanto');
+						var tmpQuery = libFoxHound.new(_Fable).setDialect('Esperanto');
 						Expect(tmpQuery.dialect.name)
 							.to.equal('English');
 					}
@@ -367,7 +368,7 @@ suite
 					'Try to pass bad filters',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 						tmpQuery.addFilter();
 						tmpQuery.addFilter('Name');
 						Expect(tmpQuery.parameters.filter)
@@ -379,7 +380,7 @@ suite
 					'Pass many filters',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 						tmpQuery.addFilter('Name', 'Smith');
 						tmpQuery.addFilter('City', 'Seattle');
 						Expect(tmpQuery.parameters.filter.length)
@@ -393,7 +394,7 @@ suite
 					'Pass bad records',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 						tmpQuery.addRecord();
 						Expect(tmpQuery.query.records)
 							.to.equal(false);					}
@@ -403,7 +404,7 @@ suite
 					'Pass multiple records',
 					function()
 					{
-						var tmpQuery = libFoxHound.new(libFable);
+						var tmpQuery = libFoxHound.new(_Fable);
 						tmpQuery.addRecord({ID:10});
 						tmpQuery.addRecord({ID:100});
 						tmpQuery.addRecord({ID:1000});

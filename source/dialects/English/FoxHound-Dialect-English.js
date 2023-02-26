@@ -93,4 +93,4 @@ var FoxHoundDialectEnglish = function()
 	return tmpDialect;
 };
 
-module.exports = new FoxHoundDialectEnglish();
+module.exports = FoxHoundDialectEnglish;

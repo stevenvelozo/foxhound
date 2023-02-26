@@ -1,6 +1,6 @@
 {
   "name": "foxhound",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A Database Query generation library.",
   "main": "source/FoxHound.js",
   "scripts": {
@@ -58,7 +58,6 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "fable": "^3.0.2",
-    "underscore": "1.13.6"
+    "fable": "^3.0.4"
   }
 }
