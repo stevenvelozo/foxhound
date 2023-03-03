@@ -58,6 +58,6 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "fable": "^3.0.4"
+    "fable": "^3.0.11"
   }
 }
