@@ -704,7 +704,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 				}
 			}
 
-			if (tmpCurrentColumn > 0)
+			if ((tmpCurrentColumn > 0) && (tmpCreateSet != ''))
 			{
 				tmpCreateSet += ',';
 			}
@@ -730,7 +730,8 @@ var FoxHoundDialectMSSQL = function(pFable)
 					else
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
-						tmpCreateSet += ' NULL';
+						//tmpCreateSet += ' NULL';
+						// For MSSQL we have to skip this.  NULL and DEFAULT both error for autoidentities.
 					}
 					break;
 				case 'AutoGUID':
@@ -846,6 +847,17 @@ var FoxHoundDialectMSSQL = function(pFable)
 			}
 			switch (tmpSchemaEntry.Type)
 			{
+				// We skip these for MSSQL on INSERT or they cause an error for some versions (different errors for different versions)
+				case 'AutoIdentity':
+					if (pParameters.query.disableAutoIdentity)
+					{
+						if (tmpCreateSet != '')
+						{
+							tmpCreateSet += ',';
+						}
+						tmpCreateSet += ' '+tmpColumn;
+					}
+					continue;
 				default:
 					if (tmpCreateSet != '')
 					{
