@@ -32,11 +32,91 @@ var FoxHoundDialectMSSQL = function(pFable)
 	*/
 	var generateTableName = function(pParameters)
 	{
-		if (pParameters.scope && pParameters.scope.indexOf('`') >= 0)
-			return ' '+pParameters.scope+'';
-		else
-			return ' `'+pParameters.scope+'`';
+		// Every Foxhound query has a table name; this puts it on here even if there are no columns
+		// Which occurs when you generate a query like SELECT COUNT(*) FROM SomeTable;
+		if (!pParameters.query.hasOwnProperty('parameterTypes'))
+		{
+			pParameters.query.parameterTypes = {};
+		}
+		return ' '+pParameters.scope;
 	};
+
+	var generateMSSQLParameterTypeEntry = function(pParameters, pColumnParameterName, pColumn)
+	{
+		// Lazily create the parameterTypes object if it doesn't exist
+		if (!pParameters.query.hasOwnProperty('parameterTypes'))
+		{
+			pParameters.query.parameterTypes = {};
+		}
+		// Find the column parameter type for our prepared statement
+		let tmpColumnParameterTypeString = 'VarChar';
+		if (typeof(pColumn) == 'object')
+		{
+			// See if it has a type, set the type string
+			tmpColumnParameterTypeString = pColumn.Type;
+		}
+		else if (typeof(pColumn) == 'string')
+		{
+			var tmpSchema = Array.isArray(pParameters.query.schema) ? pParameters.query.schema : [];
+			for (let i = 0; i < tmpSchema.length; i++)
+			{
+				if (tmpSchema[i].Column == pColumn)
+				{
+					tmpColumnParameterTypeString = tmpSchema[i].Type;
+					break;
+				}
+			}
+		}
+		else
+		{
+			_Fable.log.warn(`Meadow MSSQL query attempted to add a parameter type but no valid column schema entry object or column name was passed; parameter name ${pColumnParameterName}.`);
+		}
+
+		if ((tmpColumnParameterTypeString == null) || (tmpColumnParameterTypeString == undefined))
+		{
+			return false;
+		}
+		switch (tmpColumnParameterTypeString)
+		{
+			case 'AutoIdentity':
+			case 'CreateIDUser':
+			case 'UpdateIDUser':
+			case 'DeleteIDUser':
+
+			case 'Integer':
+				pParameters.query.parameterTypes[pColumnParameterName] = 'Int';
+				break;
+
+			case 'Deleted':
+			case 'Boolean':
+				pParameters.query.parameterTypes[pColumnParameterName] = 'TinyInt';
+				break;
+
+			case 'Decimal':
+				pParameters.query.parameterTypes[pColumnParameterName] = 'Decimal';
+				break;
+
+			case 'String':
+			case 'AutoGUID':
+				pParameters.query.parameterTypes[pColumnParameterName] = 'Char';
+				break;
+
+			case 'CreateDate':
+			case 'UpdateDate':
+			case 'DeleteDate':
+
+			case 'DateTime':
+				pParameters.query.parameterTypes[pColumnParameterName] = 'DateTime';
+				break;
+
+			default:
+				// TODO: This might should throw?  It would mean a new type was added to stricture we don't know about.
+				pParameters.query.parameterTypes[pColumnParameterName] = tmpColumnParameterTypeString;
+				return false;
+		}
+
+		return true;
+	}
 
 	/**
 	* Generate a field list from the array of dataElements
@@ -99,36 +179,12 @@ var FoxHoundDialectMSSQL = function(pFable)
 		return tmpFieldList;
 	};
 
-	const SURROUNDING_QUOTES_AND_WHITESPACE_REGEX = /^[` ]+|[` ]+$/g;
-
-	const cleanseQuoting = (str) =>
-	{
-		return str.replace(SURROUNDING_QUOTES_AND_WHITESPACE_REGEX, '');
-	};
-
 	/**
 	* Ensure a field name is properly escaped.
 	*/
 	var generateSafeFieldName = function(pFieldName)
 	{
-		let pFieldNames = pFieldName.split('.');
-		if (pFieldNames.length > 1)
-		{
-			const cleansedFieldName = cleanseQuoting(pFieldNames[1]);
-			if (cleansedFieldName === '*')
-			{
-				// do not put * as `*`
-				return "`" + cleanseQuoting(pFieldNames[0]) + "`.*";
-			}
-			return "`" + cleanseQuoting(pFieldNames[0]) + "`.`" + cleansedFieldName + "`";
-		}
-		const cleansedFieldName = cleanseQuoting(pFieldNames[0]);
-		if (cleansedFieldName === '*')
-		{
-			// do not put * as `*`
-			return '*';
-		}
-		return "`" + cleanseQuoting(pFieldNames[0]) + "`";
+		return pFieldName;
 	}
 
 	/**
@@ -231,8 +287,10 @@ var FoxHoundDialectMSSQL = function(pFable)
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( :'+tmpColumnParameter+' )';
+				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( @'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
+				// Find the column in the schema
+				generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpFilter[i].Parameter)
 			}
 			else if (tmpFilter[i].Operator === 'IS NULL')
 			{
@@ -248,8 +306,9 @@ var FoxHoundDialectMSSQL = function(pFable)
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' :'+tmpColumnParameter;
+				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' @'+tmpColumnParameter;
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
+				generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpFilter[i].Parameter)
 			}
 		}
 
@@ -305,14 +364,18 @@ var FoxHoundDialectMSSQL = function(pFable)
 			return '';
 		}
 
-		var tmpLimit = ' LIMIT';
+		var tmpLimit = ' OFFSET ';
 		// If there is a begin record, we'll pass that in as well.
 		if (pParameters.begin !== false)
 		{
-			tmpLimit += ' ' + pParameters.begin + ',';
+			tmpLimit += pParameters.begin;
+		}
+		else
+		{
+			tmpLimit += '0';
 		}
 		// Cap is required for a limit clause.
-		tmpLimit += ' ' + pParameters.cap;
+		tmpLimit +=  ` ROWS FETCH NEXT ${pParameters.cap} ROWS ONLY`;
 
 		return tmpLimit;
 	};
@@ -420,16 +483,18 @@ var FoxHoundDialectMSSQL = function(pFable)
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnParameter;
+					tmpUpdate += ' '+tmpColumn+' = @'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpColumn)
 					break;
 				default:
 					var tmpColumnDefaultParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = :'+tmpColumnDefaultParameter;
+					tmpUpdate += ' '+tmpColumn+' = @'+tmpColumnDefaultParameter;
 
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnDefaultParameter] = tmpRecords[0][tmpColumn];
+					generateMSSQLParameterTypeEntry(pParameters, tmpColumnDefaultParameter, tmpSchemaEntry)
 					break;
 			}
 
@@ -493,9 +558,10 @@ var FoxHoundDialectMSSQL = function(pFable)
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = @'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 					break;
 				default:
 					//DON'T allow update of other fields in this query
@@ -560,8 +626,9 @@ var FoxHoundDialectMSSQL = function(pFable)
 					break;
 				case 'UpdateIDUser':
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = :'+tmpColumnParameter;
+					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = @'+tmpColumnParameter;
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 					break;
 				default:
 					//DON'T allow update of other fields in this query
@@ -646,9 +713,10 @@ var FoxHoundDialectMSSQL = function(pFable)
 			var buildDefaultDefinition = function()
 			{
 				var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-				tmpCreateSet += ' :'+tmpColumnParameter;
+				tmpCreateSet += ' @'+tmpColumnParameter;
 				// Set the query parameter
 				pParameters.query.parameters[tmpColumnParameter] = tmpRecords[0][tmpColumn];
+				generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 			};
 
 			var tmpColumnParameter;
@@ -681,9 +749,10 @@ var FoxHoundDialectMSSQL = function(pFable)
 					{
 						// This is an autoidentity, so we don't parameterize it and just pass in NULL
 						tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-						tmpCreateSet += ' :'+tmpColumnParameter;
+						tmpCreateSet += ' @'+tmpColumnParameter;
 						// Set the query parameter
 						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.UUID;
+						generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 					}
 					break;
 				case 'UpdateDate':
@@ -711,9 +780,10 @@ var FoxHoundDialectMSSQL = function(pFable)
 						// This is the user ID, which we hope is in the query.
 						// This is how to deal with a normal column
 						tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-						tmpCreateSet += ' :'+tmpColumnParameter;
+						tmpCreateSet += ' @'+tmpColumnParameter;
 						// Set the query parameter
 						pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
+						generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 					}
 					break;
 				default:
@@ -929,7 +999,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 			}
 		}
 
-		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS RowCount FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS Row_Count FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({
