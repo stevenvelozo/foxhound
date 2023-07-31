@@ -98,7 +98,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 
 			case 'String':
 			case 'AutoGUID':
-				pParameters.query.parameterTypes[pColumnParameterName] = 'Char';
+				pParameters.query.parameterTypes[pColumnParameterName] = 'VarChar';
 				break;
 
 			case 'CreateDate':
