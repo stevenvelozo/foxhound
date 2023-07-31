@@ -19,7 +19,7 @@
 var FoxHoundDialectMSSQL = function(pFable)
 {
 	//Request time from SQL server with microseconds resolution
-	const SQL_NOW = "NOW(3)";
+	const SQL_NOW = "GETUTCDATE()";
 
 	_Fable = pFable;
 
