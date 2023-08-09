@@ -296,7 +296,7 @@ var FoxHoundDialectMySQL = function(pFable)
 	*
 	* @method: generateLimit
 	* @param: {Object} pParameters SQL Query Parameters
-	* @return: {String} Returns the table name clause
+	* @return: {String} Returns the table limit clause
 	*/
 	var generateLimit = function(pParameters)
 	{
@@ -315,6 +315,23 @@ var FoxHoundDialectMySQL = function(pFable)
 		tmpLimit += ' ' + pParameters.cap;
 
 		return tmpLimit;
+	};
+
+	/**
+	* Generate the use index clause
+	*
+	* @method: generateIndexHints
+	* @param: {Object} pParameters SQL Query Parameters
+	* @return: {String} Returns the table limit clause
+	*/
+	var generateIndexHints = function(pParameters)
+	{
+		if (!Array.isArray(pParameters.indexHints) || pParameters.indexHints.length < 1)
+		{
+			return '';
+		}
+
+		return ` USE INDEX (${pParameters.indexHints.join(',')})`;
 	};
 
 	/**
@@ -827,6 +844,7 @@ var FoxHoundDialectMySQL = function(pFable)
 		var tmpJoin = generateJoins(pParameters);
 		var tmpOrderBy = generateOrderBy(pParameters);
 		var tmpLimit = generateLimit(pParameters);
+		var tmpIndexHints = generateIndexHints(pParameters);
 		const tmpOptDistinct = pParameters.distinct ? ' DISTINCT' : '';
 
 		if (pParameters.queryOverride)
@@ -834,7 +852,7 @@ var FoxHoundDialectMySQL = function(pFable)
 			try
 			{
 				var tmpQueryTemplate = _Fable.Utility.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit, Distinct: tmpOptDistinct, _Params: pParameters});
+				return tmpQueryTemplate({FieldList:tmpFieldList, TableName:tmpTableName, Where:tmpWhere, Join:tmpJoin, OrderBy:tmpOrderBy, Limit:tmpLimit, IndexHints: tmpIndexHints, Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{
@@ -844,7 +862,7 @@ var FoxHoundDialectMySQL = function(pFable)
 			}
 		}
 
-		return `SELECT${tmpOptDistinct}${tmpFieldList} FROM${tmpTableName}${tmpJoin}${tmpWhere}${tmpOrderBy}${tmpLimit};`;
+		return `SELECT${tmpOptDistinct}${tmpFieldList} FROM${tmpTableName}${tmpIndexHints}${tmpJoin}${tmpWhere}${tmpOrderBy}${tmpLimit};`;
 	};
 
 	var Update = function(pParameters)
@@ -907,6 +925,7 @@ var FoxHoundDialectMySQL = function(pFable)
 		var tmpTableName = generateTableName(pParameters);
 		var tmpJoin = generateJoins(pParameters);
 		var tmpWhere = generateWhere(pParameters);
+		var tmpIndexHints = generateIndexHints(pParameters);
 		// here, we ignore the distinct keyword if no fields have been specified and
 		if (pParameters.distinct && tmpFieldList.length < 1)
 		{
@@ -919,7 +938,7 @@ var FoxHoundDialectMySQL = function(pFable)
 			try
 			{
 				var tmpQueryTemplate = _Fable.Utility.template(pParameters.queryOverride);
-				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', Distinct: tmpOptDistinct, _Params: pParameters});
+				return tmpQueryTemplate({FieldList:[], TableName:tmpTableName, Where:tmpWhere, OrderBy:'', Limit:'', IndexHints: tmpIndexHints, Distinct: tmpOptDistinct, _Params: pParameters});
 			}
 			catch (pError)
 			{
@@ -929,7 +948,7 @@ var FoxHoundDialectMySQL = function(pFable)
 			}
 		}
 
-		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS RowCount FROM${tmpTableName}${tmpJoin}${tmpWhere};`;
+		return `SELECT COUNT(${tmpOptDistinct}${tmpFieldList || '*'}) AS RowCount FROM${tmpTableName}${tmpIndexHints}${tmpJoin}${tmpWhere};`;
 	};
 
 	var tmpDialect = ({
