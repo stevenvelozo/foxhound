@@ -864,6 +864,19 @@ var FoxHound = function()
 			});
 
 		/**
+		 * Query
+		 *
+		 * @property query
+		 * @type Object
+		 */
+		Object.defineProperty(tmpNewFoxHoundObject, 'indexHints',
+			{
+				get: function() { return _Parameters.indexHints; },
+				set: function(pHints) { _Parameters.indexHints = pHints; },
+				enumerable: true,
+			});
+
+		/**
 		 * Result
 		 *
 		 * @property result

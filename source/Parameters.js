@@ -78,7 +78,12 @@ var FoxHoundQueryParameters = (
 				parameters: {}
 			}
 		*/
-		
+
+		indexHints: false,
+		/*
+			['IndexName1', 'IndexName2'] // A list of index names to hint to the underlying provider, if supported
+		 */
+
 		// Who is making the query
 		userID: 0,
 
