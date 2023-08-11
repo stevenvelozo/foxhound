@@ -38,7 +38,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 		{
 			pParameters.query.parameterTypes = {};
 		}
-		return ' '+pParameters.scope;
+		return ' ['+pParameters.scope+']';
 	};
 
 	var generateMSSQLParameterTypeEntry = function(pParameters, pColumnParameterName, pColumn)
@@ -152,7 +152,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 				// this means there is no autoincrementing unique ID column; treat as above
 				return '';
 			}
-			const qualifiedIDColumn = `${tmpTableName}.${idColumn.Column}`;
+			const qualifiedIDColumn = `${idColumn.Column}`;
 			return ` ${generateSafeFieldName(qualifiedIDColumn)}`;
 		}
 
@@ -184,7 +184,15 @@ var FoxHoundDialectMSSQL = function(pFable)
 	*/
 	var generateSafeFieldName = function(pFieldName)
 	{
-		return pFieldName;
+		// This isn't great but best we can do for MS SQL needing brackets around field names for reserved keywords
+		if ((pFieldName != '*') && (pFieldName.indexOf('[') < 0) && pFieldName.indexOf('.') < 0)
+		{
+			return '['+pFieldName+']';
+		}
+		else
+		{
+			return pFieldName;
+		}
 	}
 
 	/**
@@ -238,7 +246,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 						//if not, we need to add it
 						tmpFilter.push(
 						{
-							Column: tmpTableName + '.' + tmpSchemaEntry.Column,
+							Column: tmpSchemaEntry.Column,
 							Operator: '=',
 							Value: 0,
 							Connector: 'AND',
@@ -287,7 +295,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' ( @'+tmpColumnParameter+' )';
+				tmpWhere += ' ['+tmpFilter[i].Column+'] '+tmpFilter[i].Operator+' ( @'+tmpColumnParameter+' )';
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 				// Find the column in the schema
 				generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpFilter[i].Parameter)
@@ -295,18 +303,18 @@ var FoxHoundDialectMSSQL = function(pFable)
 			else if (tmpFilter[i].Operator === 'IS NULL')
 			{
 				// IS NULL is a special operator which doesn't require a value, or parameter
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
+				tmpWhere += ' ['+tmpFilter[i].Column+'] '+tmpFilter[i].Operator;
 			}
 			else if (tmpFilter[i].Operator === 'IS NOT NULL')
 			{
 				// IS NOT NULL is a special operator which doesn't require a value, or parameter
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator;
+				tmpWhere += ' ['+tmpFilter[i].Column+'] '+tmpFilter[i].Operator;
 			}
 			else
 			{
 				tmpColumnParameter = tmpFilter[i].Parameter+'_w'+i;
 				// Add the column name, operator and parameter name to the list of where value parenthetical
-				tmpWhere += ' '+tmpFilter[i].Column+' '+tmpFilter[i].Operator+' @'+tmpColumnParameter;
+				tmpWhere += ' ['+tmpFilter[i].Column+'] '+tmpFilter[i].Operator+' @'+tmpColumnParameter;
 				pParameters.query.parameters[tmpColumnParameter] = tmpFilter[i].Value;
 				generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpFilter[i].Parameter)
 			}
@@ -340,7 +348,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 			{
 				tmpOrderClause += ',';
 			}
-			tmpOrderClause += ' '+tmpOrderBy[i].Column;
+			tmpOrderClause += ' ['+tmpOrderBy[i].Column+']';
 
 			if (tmpOrderBy[i].Direction == 'Descending')
 			{
@@ -419,7 +427,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 			//verify that all required fields are valid
 			if (join.Type && join.Table && join.From && join.To)
 			{
-				tmpJoinClause += ` ${join.Type} ${join.Table} ON ${join.From} = ${join.To}`;
+				tmpJoinClause += ` ${join.Type} [${join.Table}] ON ${join.From} = ${join.To}`;
 			}
 		}
 
@@ -494,20 +502,20 @@ var FoxHoundDialectMSSQL = function(pFable)
 			{
 				case 'UpdateDate':
 					// This is an autoidentity, so we don't parameterize it and just pass in NULL
-					tmpUpdate += ' '+tmpColumn+' = ' + SQL_NOW;
+					tmpUpdate += ' ['+tmpColumn+'] = ' + SQL_NOW;
 					break;
 				case 'UpdateIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = @'+tmpColumnParameter;
+					tmpUpdate += ' ['+tmpColumn+'] = @'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpColumn)
 					break;
 				default:
 					var tmpColumnDefaultParameter = tmpColumn+'_'+tmpCurrentColumn;
-					tmpUpdate += ' '+tmpColumn+' = @'+tmpColumnDefaultParameter;
+					tmpUpdate += ' ['+tmpColumn+'] = @'+tmpColumnDefaultParameter;
 
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnDefaultParameter] = tmpRecords[0][tmpColumn];
@@ -561,21 +569,21 @@ var FoxHoundDialectMSSQL = function(pFable)
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 1';
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = 1';
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
 				case 'DeleteDate':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = ' + SQL_NOW;
 					break;
 				case 'UpdateDate':
 					// Delete operation is an Update, so we should stamp the update time
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = ' + SQL_NOW;
 					break;
 				case 'DeleteIDUser':
 					// This is the user ID, which we hope is in the query.
 					// This is how to deal with a normal column
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = @'+tmpColumnParameter;
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = @'+tmpColumnParameter;
 					// Set the query parameter
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
@@ -634,16 +642,16 @@ var FoxHoundDialectMSSQL = function(pFable)
 			switch (tmpSchemaEntry.Type)
 			{
 				case 'Deleted':
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = 0';
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = 0';
 					tmpHasDeletedField = true; //this field is required in order for query to be built
 					break;
 				case 'UpdateDate':
 					// The undelete operation is an Update, so we should stamp the update time
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = ' + SQL_NOW;
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = ' + SQL_NOW;
 					break;
 				case 'UpdateIDUser':
 					var tmpColumnParameter = tmpSchemaEntry.Column+'_'+tmpCurrentColumn;
-					tmpUpdateSql = ' '+tmpSchemaEntry.Column+' = @'+tmpColumnParameter;
+					tmpUpdateSql = ' ['+tmpSchemaEntry.Column+'] = @'+tmpColumnParameter;
 					pParameters.query.parameters[tmpColumnParameter] = pParameters.query.IDUser;
 					generateMSSQLParameterTypeEntry(pParameters, tmpColumnParameter, tmpSchemaEntry)
 					break;
@@ -872,7 +880,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 						{
 							tmpCreateSet += ',';
 						}
-						tmpCreateSet += ' '+tmpColumn;
+						tmpCreateSet += ' ['+tmpColumn+']';
 					}
 					continue;
 				default:
@@ -880,7 +888,7 @@ var FoxHoundDialectMSSQL = function(pFable)
 					{
 						tmpCreateSet += ',';
 					}
-					tmpCreateSet += ' '+tmpColumn;
+					tmpCreateSet += ' ['+tmpColumn+']';
 					break;
 			}
 		}
