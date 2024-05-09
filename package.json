@@ -1,63 +1,55 @@
 {
-  "name": "foxhound",
-  "version": "2.0.10",
-  "description": "A Database Query generation library.",
-  "main": "source/FoxHound.js",
-  "scripts": {
-    "start": "node source/FoxHound.js",
-    "coverage": "./node_modules/.bin/nyc --reporter=lcov --reporter=text-lcov ./node_modules/mocha/bin/_mocha -- -u tdd -R spec",
-    "test": "./node_modules/.bin/mocha -u tdd -R spec",
-    "build": "./node_modules/.bin/gulp build",
-    "docker-dev-build-image": "docker build ./ -f Dockerfile_LUXURYCode -t retold/foxhound:local",
-    "docker-dev-run": "docker run -it -d --name foxhound-dev -p 127.0.0.1:12346:8080 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/foxhound\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" retold/foxhound:local"
-  },
-  "mocha": {
-    "diff": true,
-    "extension": [
-      "js"
+    "name": "foxhound",
+    "version": "2.0.11",
+    "description": "A Database Query generation library.",
+    "main": "source/FoxHound.js",
+    "scripts": {
+        "start": "node source/FoxHound.js",
+        "test": "npx mocha -u tdd -R spec",
+        "tests": "npx mocha -u tdd --exit -R spec --grep",
+        "coverage": "npx nyc --reporter=lcov --reporter=text-lcov npx mocha -- -u tdd -R spec",
+        "build": "npx quack build",
+        "docker-dev-build": "docker build ./ -f Dockerfile_LUXURYCode -t foxhound-image:local",
+        "docker-dev-run": "docker run -it -d --name foxhound-dev -p 24238:8080 -p 42889:8086 -v \"$PWD/.config:/home/coder/.config\"  -v \"$PWD:/home/coder/foxhound\" -u \"$(id -u):$(id -g)\" -e \"DOCKER_USER=$USER\" foxhound-image:local",
+        "docker-dev-shell": "docker exec -it foxhound-dev /bin/bash"
+    },
+    "mocha": {
+        "diff": true,
+        "extension": [
+            "js"
+        ],
+        "package": "./package.json",
+        "reporter": "spec",
+        "slow": "75",
+        "timeout": "5000",
+        "ui": "tdd",
+        "watch-files": [
+            "source/**/*.js",
+            "test/**/*.js"
+        ],
+        "watch-ignore": [
+            "lib/vendor"
+        ]
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/stevenvelozo/foxhound.git"
+    },
+    "keywords": [
+        "orm",
+        "dal",
+        "query"
     ],
-    "package": "./package.json",
-    "reporter": "spec",
-    "slow": "75",
-    "timeout": "5000",
-    "ui": "tdd",
-    "watch-files": [
-      "source/**/*.js",
-      "test/**/*.js"
-    ],
-    "watch-ignore": [
-      "lib/vendor"
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/stevenvelozo/foxhound.git"
-  },
-  "keywords": [
-    "orm",
-    "dal",
-    "query"
-  ],
-  "author": "Steven Velozo <steven@velozo.com> (http://velozo.com/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/stevenvelozo/foxhound/issues"
-  },
-  "homepage": "https://github.com/stevenvelozo/foxhound",
-  "devDependencies": {
-    "browserify": "^17.0.0",
-    "chai": "4.3.7",
-    "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
-    "gulp-sourcemaps": "^3.0.0",
-    "gulp-terser": "^2.1.0",
-    "gulp-util": "^3.0.8",
-    "mocha": "10.2.0",
-    "nyc": "^15.1.0",
-    "vinyl-buffer": "^1.0.1",
-    "vinyl-source-stream": "^2.0.0"
-  },
-  "dependencies": {
-    "fable": "^3.0.11"
-  }
+    "author": "Steven Velozo <steven@velozo.com> (http://velozo.com/)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/stevenvelozo/foxhound/issues"
+    },
+    "homepage": "https://github.com/stevenvelozo/foxhound",
+    "devDependencies": {
+        "quackage": "^1.0.29"
+    },
+    "dependencies": {
+        "fable": "^3.0.119"
+    }
 }

@@ -1,6 +1,6 @@
 # Use the codercom/code-server image
 FROM codercom/code-server:latest
-MAINTAINER steven velozo
+LABEL org.opencontainers.image.authors="steven@velozo.com"
 
 VOLUME /home/coder/.config
 VOLUME /home/coder/.vscode
@@ -9,13 +9,7 @@ RUN echo "...installing debian dependencies..."
 RUN sudo apt update
 RUN sudo apt install vim curl tmux -y
 
-RUN echo "Building RETOLD development image..."
-
-
-RUN echo "...mapping library specific volumes..."
-# Volume mappings for RETOLD:Foxhound library
-VOLUME /home/coder/foxhound
-# VOLUME /home/coder/foxhound/node_modules
+RUN echo "Building development image..."
 
 RUN echo "...installing vscode extensions..."
 
@@ -55,8 +49,10 @@ RUN code-server --install-extension eamodio.gitlens
 # An easy on the eyes color theme
 # RUN code-server --install-extension daylerees.rainglow
 
-# MySQL2 CLient
-RUN code-server --install-extension cweijan.vscode-mysql-client2
+RUN echo "...mapping library specific volumes..."
+
+# Volume mapping for code
+VOLUME /home/coder/foxhound
 
 SHELL ["/bin/bash", "-c"]
 USER coder
